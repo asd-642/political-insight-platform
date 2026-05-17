@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>政治觀點核心 - 數據與理性思辨</title>
+    <style>
+        /* 極簡深色系設計規範 */
+        :root {
+            --bg-color: #0f172a;        /* 基礎深藍黑底色 */
+            --card-bg: #1e293b;         /* 區塊次級深底色 */
+            --text-main: #f8fafc;       /* 高亮主文字 */
+            --text-sub: #94a3b8;        /* Muted 次級文字 */
+            --accent: #ef4444;          /* 政治思辨理性紅 */
+            --ad-bg: #1e293b;           /* 廣告預留區底色 */
+            --border-color: #334155;    /* 微弱邊框線 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+            line-height: 1.6;
+            padding: 0 20px;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 40px 0;
+        }
+
+        /* 導覽列 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+
+        .logo a {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .logo a span {
+            color: var(--accent);
+        }
+
+        nav a {
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 20px;
+            transition: color 0.2s ease;
+        }
+
+        nav a:hover {
+            color: var(--text-main);
+        }
+
+        /* Google AdSense 廣告預留版位樣式 */
+        .adsense-placeholder {
+            background-color: var(--ad-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-sub);
+            font-size: 12px;
+            letter-spacing: 1px;
+            margin: 30px 0;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .adsense-placeholder::before {
+            content: "GOOGLE ADSENSE 廣告版位";
+            display: block;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: var(--text-sub);
+        }
+
+        /* 文章列表 */
+        .section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-sub);
+            margin-bottom: 24px;
+        }
+
+        .post-list {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .post-card {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            group: inherit;
+        }
+
+        .post-meta {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+        }
+
+        .post-meta span {
+            color: var(--accent);
+            margin-right: 8px;
+            font-weight: 600;
+        }
+
+        .post-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            transition: color 0.2s ease;
+        }
+
+        .post-card:hover .post-title {
+            color: var(--accent);
+        }
+
+        .post-excerpt {
+            font-size: 15px;
+            color: var(--text-sub);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 頁尾 */
+        footer {
+            margin-top: 80px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 導覽區塊 -->
+        <header>
+            <div class="logo"><a href="index.html">INSIGHT<span>.</span></a></div>
+            <nav>
+                <a href="index.html">首頁</a>
+                <a href="#">關於</a>
+            </nav>
+        </header>
+
+        <!-- 頂部廣告版位（自動回應式建議） -->
+        <div class="adsense-placeholder">
+            <!-- 貼上您的 AdSense 代碼於此 -->
+            <span>建議放置：橫幅廣告 (728x90 或 回應式廣告)</span>
+        </div>
+
+        <main>
+            <div class="section-title">最新深度見解</div>
+            
+            <div class="post-list">
+                <!-- 文章 1 -->
+                <a href="article.html" class="post-card">
+                    <div class="post-meta"><span>數據評論</span> &middot; 2026年5月17日</div>
+                    <div class="post-title">2026 地方政策變革：自動化數據如何解構法案影響力</div>
+                    <div class="post-excerpt">當公共政策走向法規數據化，傳統的主觀政論已無法滿足讀者。本文透過客觀數據指標，深度剖析各縣市最新補助政策背後的資源分佈規律。</div>
+                </a>
+
+                <!-- 文章 2 -->
+                <a href="#" class="post-card">
+                    <div class="post-meta"><span>輿情追蹤</span> &middot; 2026年5月10日</div>
+                    <div class="post-title">社群語意分析：從百萬級討論看現代選民的情感結構轉變</div>
+                    <div class="post-excerpt">透過自然語言處理（NLP）技術，我們對主流社群平台進行了為期一個月的情感監測，發現公眾對特定法案的態度呈現高度極化。</div>
+                </a>
+            </div>
+        </main>
+
+        <!-- 頁尾 -->
+        <footer>
+            <p>&copy; 2026 政治觀點核心 Insight. Powered by AI Automation.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
