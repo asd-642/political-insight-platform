@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /content/drafts/
+Disallow: /content/rejected-drafts/
+Disallow: /content/reports/
+
+Sitemap: https://policypulse.tw/sitemap.xml

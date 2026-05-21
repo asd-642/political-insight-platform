@@ -1,0 +1,282 @@
+{
+  "model": "gpt-5.4-mini",
+  "maxDrafts": 3,
+  "maxDraftsPerTopic": 1,
+  "minKeywordScore": 2,
+  "dailyRandomDrafts": {
+    "enabled": true,
+    "count": 15,
+    "minDelayMs": 1200,
+    "maxDelayMs": 2800
+  },
+  "personRegionDrafts": {
+    "enabled": true,
+    "minDraftsPerArea": 2,
+    "maxDraftsPerArea": 4,
+    "minDelayMs": 1200,
+    "maxDelayMs": 2800
+  },
+  "topicNames": {
+    "budget": "財經",
+    "housing": "居住",
+    "energy": "能源",
+    "transport": "交通",
+    "labor": "勞工",
+    "education": "教育"
+  },
+  "sources": [
+    {
+      "name": "RSS 或網頁來源範例",
+      "url": "",
+      "type": "rss",
+      "enabled": false
+    }
+  ],
+  "topicKeywords": {
+    "budget": ["預算", "稅", "補助", "財政", "物價", "產業", "投資", "支出"],
+    "housing": ["居住", "租屋", "房價", "社宅", "都更", "住宅", "房租"],
+    "energy": ["能源", "電價", "電網", "供電", "儲能", "再生能源", "停電"],
+    "transport": ["交通", "通勤", "月票", "捷運", "公車", "道路", "鐵路"],
+    "labor": ["勞工", "薪資", "工時", "職安", "就業", "最低工資", "勞保"],
+    "education": ["教育", "學費", "課綱", "技職", "高教", "校園", "採購"]
+  },
+  "people": [
+    {
+      "id": "lin-policy",
+      "name": "林政遠",
+      "role": "立法委員",
+      "area": "北部",
+      "focus": "居住、交通",
+      "stance": "主張社宅供給與通勤補助並行",
+      "topicHints": ["housing", "transport"]
+    },
+    {
+      "id": "huang-transit-north",
+      "name": "黃映竹",
+      "role": "市議員",
+      "area": "北部",
+      "focus": "交通、捷運",
+      "stance": "主張通勤路網與轉乘補助需同步盤點",
+      "topicHints": ["transport", "budget"]
+    },
+    {
+      "id": "tsai-housing-north",
+      "name": "蔡允澤",
+      "role": "都市發展委員",
+      "area": "北部",
+      "focus": "居住、都更",
+      "stance": "主張都更審議應公開公益回饋與安置條件",
+      "topicHints": ["housing", "budget"]
+    },
+    {
+      "id": "chou-education-north",
+      "name": "周品妍",
+      "role": "教育議員",
+      "area": "北部",
+      "focus": "教育、校園",
+      "stance": "關注校園設備採購與數位學習成效",
+      "topicHints": ["education", "budget"]
+    },
+    {
+      "id": "lu-energy-north",
+      "name": "盧柏宇",
+      "role": "區域民代",
+      "area": "北部",
+      "focus": "能源、供電",
+      "stance": "主張供電規劃需納入科技園區與住宅用電需求",
+      "topicHints": ["energy", "budget"]
+    },
+    {
+      "id": "fang-labor-north",
+      "name": "方雅琪",
+      "role": "勞政委員",
+      "area": "北部",
+      "focus": "勞工、就業",
+      "stance": "主張青年就業與職訓補助應公開追蹤成果",
+      "topicHints": ["labor", "education"]
+    },
+    {
+      "id": "chen-energy",
+      "name": "陳雅庭",
+      "role": "地方首長",
+      "area": "中部",
+      "focus": "能源、產業",
+      "stance": "主張電網投資需納入地方產業負載",
+      "topicHints": ["energy", "budget"]
+    },
+    {
+      "id": "lai-industry-central",
+      "name": "賴承皓",
+      "role": "縣議員",
+      "area": "中部",
+      "focus": "產業、投資",
+      "stance": "關注產業園區公共建設與補助分配",
+      "topicHints": ["budget", "transport"]
+    },
+    {
+      "id": "hsieh-housing-central",
+      "name": "謝芷寧",
+      "role": "住宅委員",
+      "area": "中部",
+      "focus": "居住、社宅",
+      "stance": "主張社宅選址需同步公開交通與學區影響",
+      "topicHints": ["housing", "transport"]
+    },
+    {
+      "id": "ko-transport-central",
+      "name": "柯冠廷",
+      "role": "交通委員",
+      "area": "中部",
+      "focus": "交通、公車",
+      "stance": "主張偏鄉公車與幹線轉乘應用數據檢討",
+      "topicHints": ["transport", "budget"]
+    },
+    {
+      "id": "yu-labor-central",
+      "name": "余庭安",
+      "role": "勞工議員",
+      "area": "中部",
+      "focus": "勞工、職安",
+      "stance": "要求工業區職安稽查與裁罰資料公開",
+      "topicHints": ["labor", "budget"]
+    },
+    {
+      "id": "shen-education-central",
+      "name": "沈若涵",
+      "role": "教育委員",
+      "area": "中部",
+      "focus": "教育、技職",
+      "stance": "主張技職設備更新需結合地方產業需求",
+      "topicHints": ["education", "budget"]
+    },
+    {
+      "id": "wu-labor",
+      "name": "吳承安",
+      "role": "議員",
+      "area": "南部",
+      "focus": "勞工、職安",
+      "stance": "關注最低工資與中小企業配套",
+      "topicHints": ["labor", "budget"]
+    },
+    {
+      "id": "lin-energy-south",
+      "name": "林書帆",
+      "role": "能源委員",
+      "area": "南部",
+      "focus": "能源、光電",
+      "stance": "主張光電設置應兼顧農漁業與饋線容量",
+      "topicHints": ["energy", "budget"]
+    },
+    {
+      "id": "chang-housing-south",
+      "name": "張珮瑜",
+      "role": "市議員",
+      "area": "南部",
+      "focus": "居住、房租",
+      "stance": "關注租屋市場資訊揭露與青年居住壓力",
+      "topicHints": ["housing", "budget"]
+    },
+    {
+      "id": "chen-port-south",
+      "name": "陳柏均",
+      "role": "港區民代",
+      "area": "南部",
+      "focus": "交通、產業",
+      "stance": "主張港區交通與產業運輸補助需有績效指標",
+      "topicHints": ["transport", "budget"]
+    },
+    {
+      "id": "wang-education-south",
+      "name": "王采蓁",
+      "role": "教育議員",
+      "area": "南部",
+      "focus": "教育、校園",
+      "stance": "主張校園冷氣與設備維護經費需透明化",
+      "topicHints": ["education", "energy"]
+    },
+    {
+      "id": "liao-budget-south",
+      "name": "廖威廷",
+      "role": "財政委員",
+      "area": "南部",
+      "focus": "財經、補助",
+      "stance": "關注地方補助案分配與執行率",
+      "topicHints": ["budget", "labor"]
+    },
+    {
+      "id": "hsu-education",
+      "name": "徐若晴",
+      "role": "教育委員",
+      "area": "東部",
+      "focus": "教育、地方資源",
+      "stance": "主張設備採購需同步公開使用成效",
+      "topicHints": ["education", "budget"]
+    },
+    {
+      "id": "pan-transport-east",
+      "name": "潘昱辰",
+      "role": "地方議員",
+      "area": "東部",
+      "focus": "交通、鐵路",
+      "stance": "主張鐵路班次與醫療通勤需求應納入補助評估",
+      "topicHints": ["transport", "budget"]
+    },
+    {
+      "id": "kao-housing-east",
+      "name": "高詠晴",
+      "role": "住宅委員",
+      "area": "東部",
+      "focus": "居住、地方資源",
+      "stance": "關注青年返鄉租屋與公共服務可近性",
+      "topicHints": ["housing", "budget"]
+    },
+    {
+      "id": "liu-energy-east",
+      "name": "劉亦翔",
+      "role": "能源議員",
+      "area": "東部",
+      "focus": "能源、供電",
+      "stance": "主張偏遠地區供電韌性與災害備援需補足",
+      "topicHints": ["energy", "budget"]
+    },
+    {
+      "id": "tang-labor-east",
+      "name": "唐以柔",
+      "role": "勞政委員",
+      "area": "東部",
+      "focus": "勞工、就業",
+      "stance": "關注觀光與照護產業人力缺口及職訓資源",
+      "topicHints": ["labor", "education"]
+    },
+    {
+      "id": "chen-local-east",
+      "name": "程子謙",
+      "role": "地方首長",
+      "area": "東部",
+      "focus": "財經、交通",
+      "stance": "主張地方建設需以交通可達性與產業需求排序",
+      "topicHints": ["budget", "transport"]
+    }
+  ],
+  "stopwords": [
+    "今天",
+    "表示",
+    "指出",
+    "相關",
+    "目前",
+    "以及",
+    "一個",
+    "這個",
+    "可能",
+    "進行",
+    "沒有",
+    "可以",
+    "政府",
+    "政策"
+  ],
+  "sampleTexts": [
+    "總預算審查進入攻防，支出凍結、地方建設與社福支出成為朝野討論焦點。",
+    "租屋補貼新制更新，地方執行差異、申請資格與租金轉嫁疑慮受到關注。",
+    "電網韌性與區域供電議題升溫，儲能建設、停電事故檢討與年度預算成為追蹤重點。"
+  ]
+}

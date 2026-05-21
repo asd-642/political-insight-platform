@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem("policyPulseTheme");
+          const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+          document.documentElement.dataset.theme = saved || (prefersLight ? "light" : "dark");
+        } catch {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <title>後台統計｜政策脈絡</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="stylesheet" href="styles.css?v=20260520-7" />
+  </head>
+  <body class="doc-page admin-page">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="回到政策脈絡首頁">
+        <span class="brand-mark">政</span>
+        <span class="brand-text">政策脈絡</span>
+      </a>
+      <nav class="nav-tabs" aria-label="後台導覽">
+        <a class="nav-tab" href="index.html">前台</a>
+        <a class="nav-tab is-active" href="admin.html">後台</a>
+        <a class="nav-tab" href="data-map.html">資料庫</a>
+        <a class="nav-tab" href="about.html">關於</a>
+      </nav>
+      <div class="auth-controls" aria-label="帳號與顯示設定">
+        <button id="themeToggle" class="utility-button" type="button">
+          <span id="themeLabel">亮色</span>
+        </button>
+        <button id="accountButton" class="account-button" type="button" hidden>
+          帳號
+        </button>
+      </div>
+    </header>
+
+    <main class="doc-shell">
+      <section class="doc-panel">
+        <p class="eyebrow">Admin</p>
+        <h1>後台統計</h1>
+        <p>
+          目前是本機統計原型，會記錄這台瀏覽器中的登入、瀏覽、搜尋與文章點擊。正式上線後可改接 Firebase、資料庫或 GA4。
+        </p>
+
+        <div id="adminStats" class="admin-grid"></div>
+
+        <section class="admin-table">
+          <div class="admin-table-head">
+            <div>
+              <p class="eyebrow">Database Map</p>
+              <h2>資料庫紀錄示意</h2>
+            </div>
+            <a class="admin-button primary" href="data-map.html">打開資料庫示意</a>
+          </div>
+          <div class="data-record-note">
+            查看網站後台可能會記錄的帳號、瀏覽事件、文章、留言、廣告與安全資料表，也會讀取目前本機已產生的事件摘要。
+          </div>
+        </section>
+
+        <section class="admin-table">
+          <div class="admin-table-head">
+            <div>
+              <p class="eyebrow">Review Standard</p>
+              <h2>發布前檢查清單</h2>
+            </div>
+          </div>
+          <div class="draft-facts">
+            <span><small>來源</small><strong>至少 2 個可查來源，重大主張優先用原始文件。</strong></span>
+            <span><small>內容</small><strong>需有背景、影響對象、支持方、疑慮方與後續追蹤。</strong></span>
+            <span><small>合規</small><strong>不得發布未查證指控、仇恨攻擊或私人資料。</strong></span>
+          </div>
+        </section>
+
+        <section class="admin-table keyword-draft-panel">
+          <div class="admin-table-head">
+            <div>
+              <p class="eyebrow">Keyword Writer</p>
+              <h2>指定關鍵字產稿</h2>
+            </div>
+          </div>
+          <form id="keywordDraftForm" class="keyword-draft-form">
+            <label>
+              <span>關鍵字</span>
+              <input id="keywordDraftInput" type="text" placeholder="例：床墊回收、囤房稅、電價" required />
+            </label>
+            <label>
+              <span>分類</span>
+              <select id="keywordDraftTopic">
+                <option value="budget">財經</option>
+                <option value="housing">居住</option>
+                <option value="energy">能源</option>
+                <option value="transport">交通</option>
+                <option value="labor">勞工</option>
+                <option value="education">教育</option>
+              </select>
+            </label>
+            <label>
+              <span>產生篇數</span>
+              <input id="keywordDraftMax" type="number" min="1" max="5" value="1" />
+            </label>
+            <label class="wide">
+              <span>指定來源網址，可不填</span>
+              <textarea
+                id="keywordDraftSources"
+                rows="3"
+                placeholder="一行一個新聞網址或 RSS。留空會自動用關鍵字搜尋新聞 RSS。"
+              ></textarea>
+            </label>
+            <div class="admin-actions">
+              <button id="createKeywordDrafts" class="admin-button primary" type="submit">
+                自動抓取並產生草稿
+              </button>
+            </div>
+          </form>
+          <div id="keywordDraftStatus" class="draft-status"></div>
+        </section>
+
+        <section class="admin-table keyword-blacklist-panel">
+          <div class="admin-table-head">
+            <div>
+              <p class="eyebrow">Content Guard</p>
+              <h2>關鍵字黑名單</h2>
+            </div>
+            <div class="admin-actions compact">
+              <button id="refreshKeywordBlacklist" class="admin-button" type="button">重新整理</button>
+              <button id="saveKeywordBlacklist" class="admin-button primary" type="button">儲存黑名單</button>
+            </div>
+          </div>
+          <div class="keyword-blacklist-body">
+            <label>
+              <span>避開的字詞</span>
+              <textarea
+                id="keywordBlacklistInput"
+                rows="4"
+                placeholder="一行一個字詞。只要草稿標題、摘要、本文、標籤或來源摘要命中，就不會進入待審清單。"
+              ></textarea>
+            </label>
+          </div>
+          <div id="keywordBlacklistStatus" class="draft-status">正在讀取黑名單...</div>
+        </section>
+
+        <section class="admin-table draft-review-panel">
+          <div class="admin-table-head">
+            <div>
+              <p class="eyebrow">Draft Review</p>
+              <h2>AI 草稿審核</h2>
+            </div>
+            <div class="admin-actions compact">
+              <button id="refreshDrafts" class="admin-button" type="button">更新草稿</button>
+              <button id="selectAllDrafts" class="admin-button" type="button">全選</button>
+              <button id="clearDraftSelection" class="admin-button" type="button">取消選取</button>
+              <button id="approveSelectedDrafts" class="admin-button primary" type="button" disabled>
+                批次確認發布
+              </button>
+            </div>
+          </div>
+          <div id="draftReviewStatus" class="draft-status">正在檢查待審草稿...</div>
+          <div id="draftReviewQueue" class="draft-review-list"></div>
+        </section>
+
+        <section class="admin-table comment-moderation-panel">
+          <div class="admin-table-head">
+            <div>
+              <p class="eyebrow">Comment Moderation</p>
+              <h2>留言管理</h2>
+            </div>
+            <div class="admin-actions compact">
+              <button id="refreshComments" class="admin-button" type="button">重新整理留言</button>
+            </div>
+          </div>
+          <div id="commentModerationStatus" class="draft-status">正在讀取留言...</div>
+          <div id="commentModerationList" class="comment-moderation-list"></div>
+        </section>
+
+        <section class="admin-table">
+          <h2>熱門文章</h2>
+          <div id="articleStats"></div>
+        </section>
+
+        <section class="admin-table">
+          <h2>最近事件</h2>
+          <div id="eventList"></div>
+        </section>
+
+        <div class="admin-actions">
+          <button id="refreshStats" class="admin-button" type="button">重新整理</button>
+          <button id="clearStats" class="admin-button" type="button">清除本機統計</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="firebase-config.js"></script>
+    <script src="firebase-bootstrap.js?v=20260520-2"></script>
+    <script src="auth-theme.js?v=20260520-1"></script>
+    <script src="admin.js?v=20260520-1"></script>
+  </body>
+</html>

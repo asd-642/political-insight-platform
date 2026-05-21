@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem("policyPulseTheme");
+          const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+          document.documentElement.dataset.theme = saved || (prefersLight ? "light" : "dark");
+        } catch {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <title>更正與來源政策｜政策脈絡</title>
+    <meta name="description" content="政策脈絡的來源分級、更正流程、AI 草稿審核與留言處理政策。" />
+    <meta name="robots" content="index,follow" />
+    <link rel="stylesheet" href="styles.css?v=20260520-7" />
+  </head>
+  <body class="doc-page">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="回到政策脈絡首頁">
+        <span class="brand-mark">政</span>
+        <span class="brand-text">政策脈絡</span>
+      </a>
+      <nav class="nav-tabs" aria-label="文件導覽">
+        <a class="nav-tab" href="about.html">關於</a>
+        <a class="nav-tab is-active" href="corrections.html">更正</a>
+        <a class="nav-tab" href="privacy.html">隱私</a>
+      </nav>
+      <div class="auth-controls" aria-label="帳號與顯示設定">
+        <button id="themeToggle" class="utility-button" type="button">
+          <span id="themeLabel">亮色</span>
+        </button>
+        <button id="accountButton" class="account-button" type="button" hidden>
+          帳號
+        </button>
+      </div>
+    </header>
+
+    <main class="doc-shell">
+      <article class="doc-panel">
+        <p class="eyebrow">Corrections</p>
+        <h1>更正與來源政策</h1>
+        <p>
+          若內容有錯誤、過期、來源不足或需要補充背景，本站會在確認後修正，並於相關條目保留更新日期。
+        </p>
+
+        <h2>來源分級</h2>
+        <ul>
+          <li>一級來源：政府公告、法規資料庫、議事紀錄、判決書、選舉公報。</li>
+          <li>二級來源：官方新聞稿、統計資料、公開簡報、研究報告。</li>
+          <li>輔助來源：新聞報導、專訪、評論文章與社群公開貼文。</li>
+        </ul>
+
+        <h2>更正方式</h2>
+        <p>
+          若需要提出更正、補充來源或移除不當留言，請來信
+          <a class="text-link" href="mailto:lutinghui941025@gmail.com">lutinghui941025@gmail.com</a>。
+          來信請附上文章網址、需要更正的段落與可查來源，本站會在確認後更新。
+        </p>
+
+        <h2>AI 草稿審核</h2>
+        <ul>
+          <li>AI 產生內容只作為草稿，發布前需人工確認標題、來源、事實與語氣。</li>
+          <li>若來源不足，文章需標示待查核，或先保留在後台不公開。</li>
+          <li>不得把推測、網友說法或單一來源指控寫成已確認事實。</li>
+        </ul>
+
+        <h2>留言處理</h2>
+        <p>
+          留言區接受補充資料、問題與不同看法，但不接受人身攻擊、歧視、未查證指控、個資揭露或垃圾訊息。被檢舉的留言會優先進入後台審查，必要時隱藏或刪除。
+        </p>
+      </article>
+    </main>
+    <script src="site-seo.js?v=20260520-2"></script>
+    <script src="auth-theme.js?v=20260520-1"></script>
+  </body>
+</html>

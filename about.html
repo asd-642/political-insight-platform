@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem("policyPulseTheme");
+          const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+          document.documentElement.dataset.theme = saved || (prefersLight ? "light" : "dark");
+        } catch {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <title>關於本站｜政策脈絡</title>
+    <meta name="description" content="政策脈絡的網站定位、編輯原則、AI 輔助流程與內容審核方式。" />
+    <meta name="robots" content="index,follow" />
+    <link rel="stylesheet" href="styles.css?v=20260520-7" />
+  </head>
+  <body class="doc-page">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="回到政策脈絡首頁">
+        <span class="brand-mark">政</span>
+        <span class="brand-text">政策脈絡</span>
+      </a>
+      <nav class="nav-tabs" aria-label="文件導覽">
+        <a class="nav-tab is-active" href="about.html">關於</a>
+        <a class="nav-tab" href="corrections.html">更正</a>
+        <a class="nav-tab" href="privacy.html">隱私</a>
+      </nav>
+      <div class="auth-controls" aria-label="帳號與顯示設定">
+        <button id="themeToggle" class="utility-button" type="button">
+          <span id="themeLabel">亮色</span>
+        </button>
+        <button id="accountButton" class="account-button" type="button" hidden>
+          帳號
+        </button>
+      </div>
+    </header>
+
+    <main class="doc-shell">
+      <article class="doc-panel">
+        <p class="eyebrow">About</p>
+        <h1>關於本站</h1>
+        <p>
+          政策脈絡是一個政治與公共政策資料站，目標是把政策、人物、事件時間線與來源整理在同一個結構裡，讓讀者能更快看懂公共議題的背景與後續追蹤方向。
+        </p>
+
+        <h2>編輯原則</h2>
+        <ul>
+          <li>優先引用政府公告、議事紀錄、選舉公報與原始文件。</li>
+          <li>新聞報導只作為脈絡補充，重大說法需交叉查核。</li>
+          <li>人物與政策頁面分開呈現事實、主張、疑慮與待查資料。</li>
+          <li>不使用仇恨、歧視、威脅或未查證指控作為內容主軸。</li>
+        </ul>
+
+        <h2>目前狀態</h2>
+        <p>
+          本站目前持續整理公開資料與新聞脈絡，文章會標示來源狀態、待查資料與更新日期。若內容仍在查核中，會以待查核或待補資料標示。
+        </p>
+
+        <h2>AI 輔助說明</h2>
+        <p>
+          本站可使用 AI 協助整理公開來源、建立草稿與產生示意封面，但草稿不會自動直接發布。正式文章需經後台審核，確認來源、語氣與待查資料標示後才公開。
+        </p>
+
+        <h2>圖片與授權</h2>
+        <p>
+          本站文章圖片會優先使用授權明確的公開圖片、自製圖或示意圖。若使用第三方圖片，會確認授權條件並避免誤用新聞站或社群圖片。
+        </p>
+
+        <h2>留言管理</h2>
+        <p>
+          留言功能提供註冊會員討論與補充資料。使用者可針對留言檢舉，管理員可在後台隱藏或刪除不當留言，以維持可讀性與廣告合規。
+        </p>
+      </article>
+    </main>
+    <script src="site-seo.js?v=20260520-2"></script>
+    <script src="auth-theme.js?v=20260520-1"></script>
+  </body>
+</html>

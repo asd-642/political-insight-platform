@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem("policyPulseTheme");
+          const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+          document.documentElement.dataset.theme = saved || (prefersLight ? "light" : "dark");
+        } catch {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <title>隱私權政策｜政策脈絡</title>
+    <meta name="description" content="政策脈絡的登入、留言、統計、Cookie、廣告與資料使用說明。" />
+    <meta name="robots" content="index,follow" />
+    <link rel="stylesheet" href="styles.css?v=20260520-7" />
+  </head>
+  <body class="doc-page">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="回到政策脈絡首頁">
+        <span class="brand-mark">政</span>
+        <span class="brand-text">政策脈絡</span>
+      </a>
+      <nav class="nav-tabs" aria-label="文件導覽">
+        <a class="nav-tab" href="about.html">關於</a>
+        <a class="nav-tab" href="corrections.html">更正</a>
+        <a class="nav-tab is-active" href="privacy.html">隱私</a>
+      </nav>
+      <div class="auth-controls" aria-label="帳號與顯示設定">
+        <button id="themeToggle" class="utility-button" type="button">
+          <span id="themeLabel">亮色</span>
+        </button>
+        <button id="accountButton" class="account-button" type="button" hidden>
+          帳號
+        </button>
+      </div>
+    </header>
+
+    <main class="doc-shell">
+      <article class="doc-panel">
+        <p class="eyebrow">Privacy</p>
+        <h1>隱私權政策</h1>
+        <p>
+          本站目前提供會員登入、文章留言與基本流量統計。正式上線後，若加入廣告、分析服務或聯盟連結，將在此揭露資料使用方式。
+        </p>
+
+        <h2>可能收集的資料</h2>
+        <ul>
+          <li>網站瀏覽資料，例如頁面瀏覽、裝置類型與來源渠道。</li>
+          <li>使用者主動提供的資料，例如登入信箱、留言內容、更正來信中的姓名與信箱。</li>
+          <li>第三方廣告或分析服務可能使用的 Cookie 或類似技術。</li>
+        </ul>
+
+        <h2>資料使用目的</h2>
+        <p>
+          資料只用於改善內容品質、維護網站安全、處理更正請求，以及在正式營運後支援廣告或聯盟揭露需求。
+        </p>
+
+        <h2>留言與會員資料</h2>
+        <p>
+          使用 Google 帳號或會員功能登入後，本站可能保存使用者名稱、信箱、留言內容、回覆關係、按讚或檢舉紀錄。這些資料用於顯示留言、處理檢舉與維護討論品質。
+        </p>
+
+        <h2>Cookie 與廣告</h2>
+        <p>
+          正式上線並接入 Google AdSense 或其他廣告服務後，第三方服務可能透過 Cookie 或類似技術提供、衡量與改善廣告。使用者可透過瀏覽器設定管理 Cookie，也可依廣告服務提供的工具調整個人化廣告偏好。
+        </p>
+
+        <h2>資料保留與刪除</h2>
+        <p>
+          留言、檢舉與後台審核紀錄會保留至內容管理需要結束為止。若使用者希望移除自己的留言或更正資料，可透過本站聯絡方式提出請求。
+        </p>
+      </article>
+    </main>
+    <script src="site-seo.js?v=20260520-2"></script>
+    <script src="auth-theme.js?v=20260520-1"></script>
+  </body>
+</html>

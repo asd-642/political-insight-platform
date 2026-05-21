@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem("policyPulseTheme");
+          const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+          document.documentElement.dataset.theme = saved || (prefersLight ? "light" : "dark");
+        } catch {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <title>立即註冊｜政策脈絡</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="stylesheet" href="styles.css?v=20260520-7" />
+  </head>
+  <body class="doc-page auth-page">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="回到政策脈絡首頁">
+        <span class="brand-mark">政</span>
+        <span class="brand-text">政策脈絡</span>
+      </a>
+      <nav class="nav-tabs" aria-label="帳號導覽">
+        <a class="nav-tab" href="index.html">首頁</a>
+        <a class="nav-tab is-active" href="register.html">註冊</a>
+        <a class="nav-tab" href="forgot-password.html">忘記密碼</a>
+      </nav>
+      <div class="auth-controls" aria-label="帳號與顯示設定">
+        <button id="themeToggle" class="utility-button" type="button">
+          <span id="themeLabel">亮色</span>
+        </button>
+        <button id="accountButton" class="account-button" type="button" hidden>帳號</button>
+      </div>
+    </header>
+
+    <main class="auth-page-shell">
+      <section class="auth-card auth-card-game auth-page-panel" data-auth-page="register">
+        <div class="auth-site-title" aria-label="政策脈絡">
+          <span class="auth-site-mark">政</span>
+          <strong>政策脈絡</strong>
+        </div>
+        <div class="auth-page-copy">
+          <p class="eyebrow">Register</p>
+          <h1>建立網站帳號</h1>
+          <p>使用電子信箱註冊後，可以留言、回覆與管理自己的互動紀錄。</p>
+        </div>
+
+        <form class="auth-form auth-page-form">
+          <label class="auth-field auth-field-plain">
+            <span class="sr-only">電子信箱</span>
+            <input name="email" type="email" autocomplete="email" placeholder="輸入電子郵件信箱" required />
+          </label>
+          <label class="auth-field auth-field-plain">
+            <span class="sr-only">顯示名稱</span>
+            <input name="displayName" type="text" autocomplete="nickname" placeholder="輸入顯示名稱" />
+          </label>
+          <label class="auth-field auth-field-plain">
+            <span class="sr-only">密碼</span>
+            <input name="password" type="password" autocomplete="new-password" placeholder="輸入密碼" required />
+          </label>
+          <label class="auth-field auth-field-plain">
+            <span class="sr-only">確認密碼</span>
+            <input name="confirmPassword" type="password" autocomplete="new-password" placeholder="再次輸入密碼" required />
+          </label>
+          <label class="auth-check-row">
+            <input name="agree" type="checkbox" required />
+            <span>我確認使用此電子信箱註冊政策脈絡帳號。</span>
+          </label>
+          <button class="auth-submit auth-submit-wide" type="submit">建立帳號</button>
+          <p class="auth-message" data-auth-status role="status"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="firebase-config.js"></script>
+    <script src="firebase-bootstrap.js?v=20260520-2"></script>
+    <script src="auth-theme.js?v=20260520-1"></script>
+    <script src="auth-pages.js?v=20260520-3"></script>
+  </body>
+</html>

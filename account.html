@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem("policyPulseTheme");
+          const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+          document.documentElement.dataset.theme = saved || (prefersLight ? "light" : "dark");
+        } catch {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <title>帳號設定｜政策脈絡</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="stylesheet" href="styles.css?v=20260520-7" />
+  </head>
+  <body class="doc-page auth-page">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="回到政策脈絡首頁">
+        <span class="brand-mark">政</span>
+        <span class="brand-text">政策脈絡</span>
+      </a>
+      <nav class="nav-tabs" aria-label="帳號導覽">
+        <a class="nav-tab" href="index.html">首頁</a>
+        <a class="nav-tab is-active" href="account.html">帳號資料</a>
+        <a class="nav-tab" href="forgot-password.html">忘記密碼</a>
+      </nav>
+      <div class="auth-controls" aria-label="帳號與顯示設定">
+        <button id="themeToggle" class="utility-button" type="button">
+          <span id="themeLabel">亮色</span>
+        </button>
+        <button id="accountButton" class="account-button" type="button" hidden>帳號</button>
+      </div>
+    </header>
+
+    <main class="auth-page-shell">
+      <section class="auth-card auth-card-game auth-page-panel" data-auth-page="account">
+        <div class="auth-site-title" aria-label="政策脈絡">
+          <span class="auth-site-mark">政</span>
+          <strong>政策脈絡</strong>
+        </div>
+        <div class="auth-page-copy">
+          <p class="eyebrow">Account</p>
+          <h1>帳號設定</h1>
+          <p>管理登入信箱與密碼。Google 帳號的密碼需到 Google 帳號中心處理。</p>
+        </div>
+
+        <div class="account-page-summary">
+          <span>目前信箱<strong data-account-email>尚未登入</strong></span>
+          <span>登入方式<strong data-account-provider>未登入</strong></span>
+        </div>
+
+        <section class="account-watchlist" aria-labelledby="accountWatchlistTitle">
+          <div class="section-heading">
+            <p class="eyebrow">Watch List</p>
+            <h2 id="accountWatchlistTitle">追蹤清單</h2>
+          </div>
+          <p>你在文章頁加入追蹤的議題會集中在這裡，方便之後回看更新。</p>
+          <div class="account-watchlist-list" data-account-watchlist>
+            <div class="account-watchlist-empty">
+              <strong>正在讀取追蹤清單</strong>
+              <span>若尚未追蹤文章，這裡會保持空白狀態。</span>
+            </div>
+          </div>
+        </section>
+
+        <p class="auth-message" data-google-password-note hidden>
+          你目前使用 Google 登入，密碼不存放在本站。若要變更密碼，請到 Google 帳號管理。
+        </p>
+
+        <form class="auth-form auth-page-form" data-password-panel>
+          <label class="auth-field auth-field-plain">
+            <span class="sr-only">目前密碼</span>
+            <input name="currentPassword" type="password" autocomplete="current-password" placeholder="輸入目前密碼" />
+          </label>
+          <label class="auth-field auth-field-plain">
+            <span class="sr-only">新密碼</span>
+            <input name="newPassword" type="password" autocomplete="new-password" placeholder="輸入新密碼" required />
+          </label>
+          <label class="auth-field auth-field-plain">
+            <span class="sr-only">確認新密碼</span>
+            <input name="confirmPassword" type="password" autocomplete="new-password" placeholder="再次輸入新密碼" required />
+          </label>
+          <button class="auth-submit auth-submit-wide" type="submit">更新密碼</button>
+        </form>
+        <p class="auth-message" data-auth-status role="status"></p>
+      </section>
+    </main>
+
+    <script src="firebase-config.js"></script>
+    <script src="firebase-bootstrap.js?v=20260520-2"></script>
+    <script src="auth-theme.js?v=20260520-1"></script>
+    <script src="content/generated-content.js"></script>
+    <script src="watchlist.js?v=20260520-4"></script>
+    <script src="auth-pages.js?v=20260520-3"></script>
+  </body>
+</html>

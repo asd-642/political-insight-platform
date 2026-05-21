@@ -1,210 +1,197 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>政治觀點核心 - 數據與理性思辨</title>
-    <style>
-        /* 極簡深色系設計規範 */
-        :root {
-            --bg-color: #0f172a;        /* 基礎深藍黑底色 */
-            --card-bg: #1e293b;         /* 區塊次級深底色 */
-            --text-main: #f8fafc;       /* 高亮主文字 */
-            --text-sub: #94a3b8;        /* Muted 次級文字 */
-            --accent: #ef4444;          /* 政治思辨理性紅 */
-            --ad-bg: #1e293b;           /* 廣告預留區底色 */
-            --border-color: #334155;    /* 微弱邊框線 */
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem("policyPulseTheme");
+          const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+          document.documentElement.dataset.theme = saved || (prefersLight ? "light" : "dark");
+        } catch {
+          document.documentElement.dataset.theme = "dark";
         }
+      })();
+    </script>
+    <title>政策脈絡</title>
+    <meta
+      name="description"
+      content="政策、人物、事件時間線與資料來源整理。"
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="stylesheet" href="styles.css?v=20260520-7" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="政策脈絡首頁">
+        <span class="brand-mark">政</span>
+        <span class="brand-text">政策脈絡</span>
+      </a>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+      <nav class="nav-tabs" aria-label="主要分頁">
+        <button class="nav-tab is-active" data-view="overview" type="button">焦點</button>
+        <button class="nav-tab" data-view="issues" type="button">議題</button>
+        <button class="nav-tab" data-view="people" type="button">人物</button>
+        <button class="nav-tab" data-view="timeline" type="button">時間線</button>
+        <button class="nav-tab" data-view="sources" type="button">來源</button>
+      </nav>
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
-            line-height: 1.6;
-            padding: 0 20px;
-        }
+      <form id="siteSearchForm" class="search-field" role="search">
+        <span aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path
+              d="m21 21-4.35-4.35m1.35-5.15a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
+            />
+          </svg>
+        </span>
+        <input id="siteSearch" name="search" type="search" minlength="2" placeholder="搜尋政策、人物、事件" />
+      </form>
 
-        .container {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 40px 0;
-        }
+      <div class="auth-controls" aria-label="帳號與顯示設定">
+        <button id="themeToggle" class="utility-button" type="button">
+          <span id="themeLabel">亮色</span>
+        </button>
+        <button id="accountButton" class="account-button" type="button" hidden>
+          帳號
+        </button>
+      </div>
+    </header>
 
-        /* 導覽列 */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 40px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 40px;
-        }
+    <main id="top" class="page-shell">
+      <aside class="side-panel" aria-label="側邊工具">
+        <section class="panel-section topic-panel">
+          <button
+            id="topicToggle"
+            class="panel-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="topicFilters"
+          >
+            <span>
+              <small>Topic</small>
+              <strong>議題篩選</strong>
+            </span>
+            <span class="toggle-icon" aria-hidden="true">+</span>
+          </button>
+          <div id="topicFilters" class="filter-list" hidden></div>
+        </section>
 
-        .logo a {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-main);
-            text-decoration: none;
-            letter-spacing: 1px;
-        }
-
-        .logo a span {
-            color: var(--accent);
-        }
-
-        nav a {
-            color: var(--text-sub);
-            text-decoration: none;
-            font-size: 14px;
-            margin-left: 20px;
-            transition: color 0.2s ease;
-        }
-
-        nav a:hover {
-            color: var(--text-main);
-        }
-
-        /* Google AdSense 廣告預留版位樣式 */
-        .adsense-placeholder {
-            background-color: var(--ad-bg);
-            border: 2px dashed var(--border-color);
-            border-radius: 6px;
-            padding: 20px;
-            text-align: center;
-            color: var(--text-sub);
-            font-size: 12px;
-            letter-spacing: 1px;
-            margin: 30px 0;
-            min-height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .adsense-placeholder::before {
-            content: "GOOGLE ADSENSE 廣告版位";
-            display: block;
-            font-weight: bold;
-            margin-bottom: 4px;
-            color: var(--text-sub);
-        }
-
-        /* 文章列表 */
-        .section-title {
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-sub);
-            margin-bottom: 24px;
-        }
-
-        .post-list {
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-
-        .post-card {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            group: inherit;
-        }
-
-        .post-meta {
-            font-size: 13px;
-            color: var(--text-sub);
-            margin-bottom: 8px;
-        }
-
-        .post-meta span {
-            color: var(--accent);
-            margin-right: 8px;
-            font-weight: 600;
-        }
-
-        .post-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--text-main);
-            transition: color 0.2s ease;
-        }
-
-        .post-card:hover .post-title {
-            color: var(--accent);
-        }
-
-        .post-excerpt {
-            font-size: 15px;
-            color: var(--text-sub);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        /* 頁尾 */
-        footer {
-            margin-top: 80px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            text-align: center;
-            font-size: 13px;
-            color: var(--text-sub);
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <!-- 導覽區塊 -->
-        <header>
-            <div class="logo"><a href="index.html">INSIGHT<span>.</span></a></div>
-            <nav>
-                <a href="index.html">首頁</a>
-                <a href="#">關於</a>
-            </nav>
-        </header>
-
-        <!-- 頂部廣告版位（自動回應式建議） -->
-        <div class="adsense-placeholder">
-            <!-- 貼上您的 AdSense 代碼於此 -->
-            <span>建議放置：橫幅廣告 (728x90 或 回應式廣告)</span>
-        </div>
-
-        <main>
-            <div class="section-title">最新深度見解</div>
-            
-            <div class="post-list">
-                <!-- 文章 1 -->
-                <a href="article.html" class="post-card">
-                    <div class="post-meta"><span>數據評論</span> &middot; 2026年5月17日</div>
-                    <div class="post-title">2026 地方政策變革：自動化數據如何解構法案影響力</div>
-                    <div class="post-excerpt">當公共政策走向法規數據化，傳統的主觀政論已無法滿足讀者。本文透過客觀數據指標，深度剖析各縣市最新補助政策背後的資源分佈規律。</div>
-                </a>
-
-                <!-- 文章 2 -->
-                <a href="#" class="post-card">
-                    <div class="post-meta"><span>輿情追蹤</span> &middot; 2026年5月10日</div>
-                    <div class="post-title">社群語意分析：從百萬級討論看現代選民的情感結構轉變</div>
-                    <div class="post-excerpt">透過自然語言處理（NLP）技術，我們對主流社群平台進行了為期一個月的情感監測，發現公眾對特定法案的態度呈現高度極化。</div>
-                </a>
+        <section class="panel-section">
+          <div class="section-heading">
+            <p class="eyebrow">Queue</p>
+            <h2>追蹤清單</h2>
+          </div>
+          <div class="watch-list">
+            <div class="watch-empty">
+              <strong>正在讀取追蹤清單</strong>
+              <span>文章頁按下追蹤後，這裡會顯示你的清單。</span>
             </div>
-        </main>
+          </div>
+        </section>
 
-        <!-- 頁尾 -->
-        <footer>
-            <p>&copy; 2026 政治觀點核心 Insight. Powered by AI Automation.</p>
-        </footer>
-    </div>
+        <aside class="promo-slot promo-slot-side" data-promo-slot aria-label="廣告預留區">
+          <span>廣告版位</span>
+          <strong>300 x 250</strong>
+        </aside>
+      </aside>
 
-</body>
+      <section class="main-panel">
+        <section class="promo-slot promo-slot-top" data-promo-slot aria-label="橫幅廣告預留區">
+          <span>廣告版位</span>
+          <strong>728 x 90</strong>
+        </section>
+
+        <section id="viewOverview" class="view is-active">
+          <div class="news-board">
+            <article id="featuredStory" class="featured-story"></article>
+            <section class="headline-stack" aria-label="焦點標題">
+              <div id="headlineList"></div>
+            </section>
+          </div>
+
+          <div class="section-heading wide list-heading">
+            <div>
+              <p class="eyebrow">Latest Briefs</p>
+              <h1>政策快訊</h1>
+            </div>
+            <span id="activeTopicLabel" class="topic-badge">全部</span>
+          </div>
+          <div id="articleGrid" class="article-grid"></div>
+          <nav id="articlePagination" class="article-pagination" aria-label="文章分頁"></nav>
+
+          <section class="promo-slot promo-slot-feed" data-promo-slot aria-label="文中廣告預留區">
+            <span>廣告版位</span>
+            <strong>In-feed / 336 x 280</strong>
+          </section>
+        </section>
+
+        <section id="viewIssues" class="view">
+          <div class="section-heading wide">
+            <div>
+              <p class="eyebrow">Issues</p>
+              <h1>議題地圖</h1>
+            </div>
+          </div>
+          <div id="issueMap" class="issue-map"></div>
+        </section>
+
+        <section id="viewPeople" class="view">
+          <div class="section-heading wide">
+            <div>
+              <p class="eyebrow">People</p>
+              <h1>人物資料</h1>
+            </div>
+          </div>
+          <div id="peopleList" class="people-list"></div>
+        </section>
+
+        <section id="viewTimeline" class="view">
+          <div class="section-heading wide">
+            <div>
+              <p class="eyebrow">Timeline</p>
+              <h1 id="timelineTitle">事件時間線</h1>
+            </div>
+          </div>
+          <div id="timelineList" class="timeline-list"></div>
+        </section>
+
+        <section id="viewSources" class="view">
+          <div class="section-heading wide">
+            <div>
+              <p class="eyebrow">Sources</p>
+              <h1>來源架構</h1>
+            </div>
+          </div>
+          <div id="sourceList" class="source-list"></div>
+        </section>
+      </section>
+
+      <aside class="detail-panel" aria-label="內容詳情">
+        <div class="detail-sticky">
+          <div class="section-heading">
+            <p class="eyebrow">Selected</p>
+            <h2 id="detailTitle">政策詳情</h2>
+          </div>
+          <div id="detailBody" class="detail-body"></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="site-footer">
+      <a href="about.html">關於本站</a>
+      <a href="corrections.html">更正與來源政策</a>
+      <a href="privacy.html">隱私權政策</a>
+    </footer>
+
+    <script src="firebase-config.js"></script>
+    <script src="firebase-bootstrap.js?v=20260520-2"></script>
+    <script src="site-seo.js?v=20260520-2"></script>
+    <script src="auth-theme.js?v=20260520-1"></script>
+    <script src="ad-safety.js?v=20260520-2"></script>
+    <script src="visuals.js?v=20260520-2"></script>
+    <script src="content/generated-content.js"></script>
+    <script src="watchlist.js?v=20260520-4"></script>
+    <script src="app.js?v=20260520-6"></script>
+  </body>
 </html>

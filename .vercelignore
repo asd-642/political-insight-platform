@@ -1,0 +1,10 @@
+scripts/
+content/drafts/
+content/approved-drafts/
+content/rejected-drafts/
+content/reports/
+*.bat
+*.md
+*.mp4
+firestore.rules
+firestore.indexes.json
