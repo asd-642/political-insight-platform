@@ -15,7 +15,7 @@ function getArticleId() {
 }
 
 function articlePageUrl(id) {
-  return `article.html?id=${encodeURIComponent(id)}`;
+  return `articles/${encodeURIComponent(id)}.html`;
 }
 
 function currentContent() {

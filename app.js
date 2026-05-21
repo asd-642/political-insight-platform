@@ -301,7 +301,7 @@ const topicName = (id) =>
 const topicImage = (id) =>
   state.content.topics.find((topic) => topic.id === id)?.image || "assets/podium.png";
 
-const articleUrl = (id) => `article.html?id=${encodeURIComponent(id)}`;
+const articleUrl = (id) => `articles/${encodeURIComponent(id)}.html`;
 
 const articleImage = (article) =>
   window.PolicyPulseVisuals?.articleImage?.(article, topicName(article.topic)) ||
