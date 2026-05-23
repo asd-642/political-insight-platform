@@ -724,7 +724,7 @@ function renderDraftQueue() {
     list.innerHTML = `
       <div class="draft-empty">
         <strong>沒有待審草稿</strong>
-        <span>產生新草稿後，這裡會出現可審核的文章。</span>
+        <span>產生新草稿後，這裡會出現可審核的文章。已確認發布的文章會移出審核區，改顯示在首頁與文章列表。</span>
       </div>
     `;
     return;

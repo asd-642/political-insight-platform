@@ -1,6 +1,12 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "crons": [
+    {
+      "path": "/api/daily-drafts",
+      "schedule": "30 22 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)\\.(html|js|css|json)",

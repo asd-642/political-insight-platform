@@ -138,6 +138,17 @@
     return `${topic}-${cleanKeyword}-${date}`;
   }
 
+  function taipeiDate(date = new Date()) {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Taipei",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(date);
+    const byType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${byType.year}-${byType.month}-${byType.day}`;
+  }
+
   function keywordDraftSections(keyword, topicName) {
     return [
       {
@@ -178,8 +189,7 @@
     ];
   }
 
-  function buildKeywordDraft({ keyword, topic, sourceUrls, now, timestamp = null }) {
-    const date = now.slice(0, 10);
+  function buildKeywordDraft({ keyword, topic, sourceUrls, now, timestamp = null, date = taipeiDate(new Date(now)) }) {
     const topicName = topicNames[topic] || topic;
     const sourceList = sourceUrls.length ? sourceUrls : ["關鍵字初稿"];
     return {
@@ -459,13 +469,14 @@
       if (!keywords.length) throw new Error("請先輸入關鍵字。");
 
       const now = new Date().toISOString();
+      const date = taipeiDate();
       const batch = firestoreModule.writeBatch(db);
       const created = [];
       const reports = [];
       const blockedKeywords = await getKeywordBlacklist().catch(() => []);
 
       keywords.forEach((keyword) => {
-        const draft = buildKeywordDraft({ keyword, topic, sourceUrls, now, timestamp: serverNow() });
+        const draft = buildKeywordDraft({ keyword, topic, sourceUrls, now, timestamp: serverNow(), date });
         const blocked = findBlockedKeywords({ keyword, draft, sourceUrls }, blockedKeywords);
         const report = {
           keyword,
