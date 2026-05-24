@@ -3,8 +3,14 @@ content/drafts/
 content/approved-drafts/
 content/rejected-drafts/
 content/reports/
+.codex-preview/
+.codex-video-analysis/
+.vercel/
+PolicyPulse核心代碼-*/
 *.bat
 *.md
 *.mp4
+*.zip
+*.docx
 firestore.rules
 firestore.indexes.json
