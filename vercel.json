@@ -4,9 +4,6 @@
   "functions": {
     "api/*.mjs": {
       "maxDuration": 60
-    },
-    "api/**/*.mjs": {
-      "maxDuration": 60
     }
   },
   "crons": [
