@@ -23,3 +23,18 @@ window.PolicyPulseFirebaseConfig = {
     document.body.appendChild(script);
   });
 })();
+
+(function refineAuthDomainMessage() {
+  window.addEventListener("load", () => {
+    window.explainGoogleAuthError = function explainGoogleAuthError(error) {
+      if (error?.code === "auth/unauthorized-domain") {
+        const host = window.location.hostname || "目前網域";
+        const domainHint = host === "localhost" || host === "127.0.0.1"
+          ? "localhost 和 127.0.0.1"
+          : host;
+        return `Firebase 尚未授權目前網域。請在 Firebase Authentication 的 Authorized domains 加入 ${domainHint}。`;
+      }
+      return `Google 登入失敗：${error?.message || "未知錯誤"}`;
+    };
+  });
+})();
