@@ -1,6 +1,14 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "functions": {
+    "api/*.mjs": {
+      "maxDuration": 60
+    },
+    "api/**/*.mjs": {
+      "maxDuration": 60
+    }
+  },
   "crons": [
     {
       "path": "/api/daily-drafts",
