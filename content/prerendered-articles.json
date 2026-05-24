@@ -1,6 +1,566 @@
 {
   "articles": [
     {
+      "id": "transport-縣議員-賴承皓-2026-05-23",
+      "topic": "transport",
+      "topicLabel": "交通",
+      "title": "縣議員 賴承皓議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「縣議員 賴承皓」近期與交通議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/transport-%E7%B8%A3%E8%AD%B0%E5%93%A1-%E8%B3%B4%E6%89%BF%E7%9A%93-2026-05-23.html"
+    },
+    {
+      "id": "transport-通勤-2026-05-23",
+      "topic": "transport",
+      "topicLabel": "交通",
+      "title": "通勤議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「通勤」近期與交通議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/transport-%E9%80%9A%E5%8B%A4-2026-05-23.html"
+    },
+    {
+      "id": "transport-立法委員-林政遠-2026-05-23",
+      "topic": "transport",
+      "topicLabel": "交通",
+      "title": "立法委員 林政遠議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「立法委員 林政遠」近期與交通議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/transport-%E7%AB%8B%E6%B3%95%E5%A7%94%E5%93%A1-%E6%9E%97%E6%94%BF%E9%81%A0-2026-05-23.html"
+    },
+    {
+      "id": "transport-月票-2026-05-23",
+      "topic": "transport",
+      "topicLabel": "交通",
+      "title": "月票議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「月票」近期與交通議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/transport-%E6%9C%88%E7%A5%A8-2026-05-23.html"
+    },
+    {
+      "id": "transport-公車-2026-05-23",
+      "topic": "transport",
+      "topicLabel": "交通",
+      "title": "公車議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「公車」近期與交通議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/transport-%E5%85%AC%E8%BB%8A-2026-05-23.html"
+    },
+    {
+      "id": "labor-薪資-2026-05-23",
+      "topic": "labor",
+      "topicLabel": "勞工",
+      "title": "薪資議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「薪資」近期與勞工議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/labor-%E8%96%AA%E8%B3%87-2026-05-23.html"
+    },
+    {
+      "id": "labor-南部-勞工-2026-05-23",
+      "topic": "labor",
+      "topicLabel": "勞工",
+      "title": "南部 勞工議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「南部 勞工」近期與勞工議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/labor-%E5%8D%97%E9%83%A8-%E5%8B%9E%E5%B7%A5-2026-05-23.html"
+    },
+    {
+      "id": "labor-中部-勞工-政策-2026-05-23",
+      "topic": "labor",
+      "topicLabel": "勞工",
+      "title": "中部 勞工 政策議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「中部 勞工 政策」近期與勞工議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/labor-%E4%B8%AD%E9%83%A8-%E5%8B%9E%E5%B7%A5-%E6%94%BF%E7%AD%96-2026-05-23.html"
+    },
+    {
+      "id": "housing-蔡允澤-都更-2026-05-23",
+      "topic": "housing",
+      "topicLabel": "居住",
+      "title": "蔡允澤 都更議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「蔡允澤 都更」近期與居住議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/housing-%E8%94%A1%E5%85%81%E6%BE%A4-%E9%83%BD%E6%9B%B4-2026-05-23.html"
+    },
+    {
+      "id": "housing-都更-2026-05-23",
+      "topic": "housing",
+      "topicLabel": "居住",
+      "title": "都更議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「都更」近期與居住議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/housing-%E9%83%BD%E6%9B%B4-2026-05-23.html"
+    },
+    {
+      "id": "housing-租屋-2026-05-23",
+      "topic": "housing",
+      "topicLabel": "居住",
+      "title": "租屋議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「租屋」近期與居住議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/housing-%E7%A7%9F%E5%B1%8B-2026-05-23.html"
+    },
+    {
+      "id": "housing-住宅-2026-05-23",
+      "topic": "housing",
+      "topicLabel": "居住",
+      "title": "住宅議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「住宅」近期與居住議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/housing-%E4%BD%8F%E5%AE%85-2026-05-23.html"
+    },
+    {
+      "id": "housing-中部-居住-政策-2026-05-23",
+      "topic": "housing",
+      "topicLabel": "居住",
+      "title": "中部 居住 政策議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「中部 居住 政策」近期與居住議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/housing-%E4%B8%AD%E9%83%A8-%E5%B1%85%E4%BD%8F-%E6%94%BF%E7%AD%96-2026-05-23.html"
+    },
+    {
+      "id": "energy-儲能-2026-05-23",
+      "topic": "energy",
+      "topicLabel": "能源",
+      "title": "儲能議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「儲能」近期與能源議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/energy-%E5%84%B2%E8%83%BD-2026-05-23.html"
+    },
+    {
+      "id": "energy-停電-2026-05-23",
+      "topic": "energy",
+      "topicLabel": "能源",
+      "title": "停電議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「停電」近期與能源議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/energy-%E5%81%9C%E9%9B%BB-2026-05-23.html"
+    },
+    {
+      "id": "energy-再生能源-2026-05-23",
+      "topic": "energy",
+      "topicLabel": "能源",
+      "title": "再生能源議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「再生能源」近期與能源議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/energy-%E5%86%8D%E7%94%9F%E8%83%BD%E6%BA%90-2026-05-23.html"
+    },
+    {
+      "id": "education-高教-2026-05-23",
+      "topic": "education",
+      "topicLabel": "教育",
+      "title": "高教議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「高教」近期與教育議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/education-%E9%AB%98%E6%95%99-2026-05-23.html"
+    },
+    {
+      "id": "education-校園-2026-05-23",
+      "topic": "education",
+      "topicLabel": "教育",
+      "title": "校園議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「校園」近期與教育議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/education-%E6%A0%A1%E5%9C%92-2026-05-23.html"
+    },
+    {
+      "id": "education-技職-2026-05-23",
+      "topic": "education",
+      "topicLabel": "教育",
+      "title": "技職議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「技職」近期與教育議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/education-%E6%8A%80%E8%81%B7-2026-05-23.html"
+    },
+    {
+      "id": "education-王采蓁-教育-追蹤-2026-05-23",
+      "topic": "education",
+      "topicLabel": "教育",
+      "title": "王采蓁 教育 追蹤議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「王采蓁 教育 追蹤」近期與教育議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/education-%E7%8E%8B%E9%87%87%E8%93%81-%E6%95%99%E8%82%B2-%E8%BF%BD%E8%B9%A4-2026-05-23.html"
+    },
+    {
+      "id": "budget-程子謙-財經-2026-05-23",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "程子謙 財經議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「程子謙 財經」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/budget-%E7%A8%8B%E5%AD%90%E8%AC%99-%E8%B2%A1%E7%B6%93-2026-05-23.html"
+    },
+    {
+      "id": "budget-稅-2026-05-23",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "稅議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「稅」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/budget-%E7%A8%85-2026-05-23.html"
+    },
+    {
+      "id": "budget-陳柏均-交通-2026-05-23",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "陳柏均 交通議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「陳柏均 交通」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/budget-%E9%99%B3%E6%9F%8F%E5%9D%87-%E4%BA%A4%E9%80%9A-2026-05-23.html"
+    },
+    {
+      "id": "budget-產業-2026-05-23",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "產業議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「產業」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/budget-%E7%94%A2%E6%A5%AD-2026-05-23.html"
+    },
+    {
+      "id": "budget-東部-鐵路-2026-05-23",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "東部 鐵路議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「東部 鐵路」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/budget-%E6%9D%B1%E9%83%A8-%E9%90%B5%E8%B7%AF-2026-05-23.html"
+    },
+    {
+      "id": "budget-東部-財經-政策-2026-05-23",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "東部 財經 政策議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「東部 財經 政策」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/budget-%E6%9D%B1%E9%83%A8-%E8%B2%A1%E7%B6%93-%E6%94%BF%E7%AD%96-2026-05-23.html"
+    },
+    {
+      "id": "budget-周品妍-財經-追蹤-2026-05-23",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "周品妍 財經 追蹤議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「周品妍 財經 追蹤」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/budget-%E5%91%A8%E5%93%81%E5%A6%8D-%E8%B2%A1%E7%B6%93-%E8%BF%BD%E8%B9%A4-2026-05-23.html"
+    },
+    {
+      "id": "budget-北部-供電-2026-05-23",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "北部 供電議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「北部 供電」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-23",
+      "path": "articles/budget-%E5%8C%97%E9%83%A8-%E4%BE%9B%E9%9B%BB-2026-05-23.html"
+    },
+    {
+      "id": "transport-道路-2026-05-22",
+      "topic": "transport",
+      "topicLabel": "交通",
+      "title": "道路議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「道路」近期與交通議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/transport-%E9%81%93%E8%B7%AF-2026-05-22.html"
+    },
+    {
+      "id": "transport-捷運-2026-05-22",
+      "topic": "transport",
+      "topicLabel": "交通",
+      "title": "捷運議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「捷運」近期與交通議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/transport-%E6%8D%B7%E9%81%8B-2026-05-22.html"
+    },
+    {
+      "id": "transport-東部-鐵路-2026-05-22",
+      "topic": "transport",
+      "topicLabel": "交通",
+      "title": "東部 鐵路議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「東部 鐵路」近期與交通議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/transport-%E6%9D%B1%E9%83%A8-%E9%90%B5%E8%B7%AF-2026-05-22.html"
+    },
+    {
+      "id": "transport-月票-2026-05-22",
+      "topic": "transport",
+      "topicLabel": "交通",
+      "title": "月票議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「月票」近期與交通議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/transport-%E6%9C%88%E7%A5%A8-2026-05-22.html"
+    },
+    {
+      "id": "transport-中部-社宅-2026-05-22",
+      "topic": "transport",
+      "topicLabel": "交通",
+      "title": "中部 社宅議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「中部 社宅」近期與交通議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/transport-%E4%B8%AD%E9%83%A8-%E7%A4%BE%E5%AE%85-2026-05-22.html"
+    },
+    {
+      "id": "labor-薪資-2026-05-22",
+      "topic": "labor",
+      "topicLabel": "勞工",
+      "title": "薪資議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「薪資」近期與勞工議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/labor-%E8%96%AA%E8%B3%87-2026-05-22.html"
+    },
+    {
+      "id": "labor-勞保-2026-05-22",
+      "topic": "labor",
+      "topicLabel": "勞工",
+      "title": "勞保議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「勞保」近期與勞工議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/labor-%E5%8B%9E%E4%BF%9D-2026-05-22.html"
+    },
+    {
+      "id": "labor-最低工資-2026-05-22",
+      "topic": "labor",
+      "topicLabel": "勞工",
+      "title": "最低工資議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「最低工資」近期與勞工議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/labor-%E6%9C%80%E4%BD%8E%E5%B7%A5%E8%B3%87-2026-05-22.html"
+    },
+    {
+      "id": "labor-唐以柔-勞工-追蹤-2026-05-22",
+      "topic": "labor",
+      "topicLabel": "勞工",
+      "title": "唐以柔 勞工 追蹤議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「唐以柔 勞工 追蹤」近期與勞工議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/labor-%E5%94%90%E4%BB%A5%E6%9F%94-%E5%8B%9E%E5%B7%A5-%E8%BF%BD%E8%B9%A4-2026-05-22.html"
+    },
+    {
+      "id": "housing-都更-2026-05-22",
+      "topic": "housing",
+      "topicLabel": "居住",
+      "title": "都更議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「都更」近期與居住議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/housing-%E9%83%BD%E6%9B%B4-2026-05-22.html"
+    },
+    {
+      "id": "housing-林政遠-交通-2026-05-22",
+      "topic": "housing",
+      "topicLabel": "居住",
+      "title": "林政遠 交通議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「林政遠 交通」近期與居住議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/housing-%E6%9E%97%E6%94%BF%E9%81%A0-%E4%BA%A4%E9%80%9A-2026-05-22.html"
+    },
+    {
+      "id": "housing-房租-2026-05-22",
+      "topic": "housing",
+      "topicLabel": "居住",
+      "title": "房租議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「房租」近期與居住議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/housing-%E6%88%BF%E7%A7%9F-2026-05-22.html"
+    },
+    {
+      "id": "energy-陳雅庭-產業-2026-05-22",
+      "topic": "energy",
+      "topicLabel": "能源",
+      "title": "陳雅庭 產業議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「陳雅庭 產業」近期與能源議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/energy-%E9%99%B3%E9%9B%85%E5%BA%AD-%E7%94%A2%E6%A5%AD-2026-05-22.html"
+    },
+    {
+      "id": "energy-南部-校園-2026-05-22",
+      "topic": "energy",
+      "topicLabel": "能源",
+      "title": "南部 校園議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「南部 校園」近期與能源議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/energy-%E5%8D%97%E9%83%A8-%E6%A0%A1%E5%9C%92-2026-05-22.html"
+    },
+    {
+      "id": "energy-北部-能源-2026-05-22",
+      "topic": "energy",
+      "topicLabel": "能源",
+      "title": "北部 能源議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「北部 能源」近期與能源議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/energy-%E5%8C%97%E9%83%A8-%E8%83%BD%E6%BA%90-2026-05-22.html"
+    },
+    {
+      "id": "education-教育-2026-05-22",
+      "topic": "education",
+      "topicLabel": "教育",
+      "title": "教育議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「教育」近期與教育議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/education-%E6%95%99%E8%82%B2-2026-05-22.html"
+    },
+    {
+      "id": "education-高教-2026-05-22",
+      "topic": "education",
+      "topicLabel": "教育",
+      "title": "高教議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「高教」近期與教育議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/education-%E9%AB%98%E6%95%99-2026-05-22.html"
+    },
+    {
+      "id": "education-校園-2026-05-22",
+      "topic": "education",
+      "topicLabel": "教育",
+      "title": "校園議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「校園」近期與教育議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/education-%E6%A0%A1%E5%9C%92-2026-05-22.html"
+    },
+    {
+      "id": "education-技職-2026-05-22",
+      "topic": "education",
+      "topicLabel": "教育",
+      "title": "技職議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「技職」近期與教育議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/education-%E6%8A%80%E8%81%B7-2026-05-22.html"
+    },
+    {
+      "id": "education-方雅琪-教育-追蹤-2026-05-22",
+      "topic": "education",
+      "topicLabel": "教育",
+      "title": "方雅琪 教育 追蹤議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「方雅琪 教育 追蹤」近期與教育議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/education-%E6%96%B9%E9%9B%85%E7%90%AA-%E6%95%99%E8%82%B2-%E8%BF%BD%E8%B9%A4-2026-05-22.html"
+    },
+    {
+      "id": "budget-補助-2026-05-22",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "補助議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「補助」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/budget-%E8%A3%9C%E5%8A%A9-2026-05-22.html"
+    },
+    {
+      "id": "budget-能源委員-林書帆-2026-05-22",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "能源委員 林書帆議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「能源委員 林書帆」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/budget-%E8%83%BD%E6%BA%90%E5%A7%94%E5%93%A1-%E6%9E%97%E6%9B%B8%E5%B8%86-2026-05-22.html"
+    },
+    {
+      "id": "budget-南部-財經-2026-05-22",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "南部 財經議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「南部 財經」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/budget-%E5%8D%97%E9%83%A8-%E8%B2%A1%E7%B6%93-2026-05-22.html"
+    },
+    {
+      "id": "budget-物價-2026-05-22",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "物價議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「物價」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/budget-%E7%89%A9%E5%83%B9-2026-05-22.html"
+    },
+    {
+      "id": "budget-投資-2026-05-22",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "投資議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「投資」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/budget-%E6%8A%95%E8%B3%87-2026-05-22.html"
+    },
+    {
+      "id": "budget-地方首長-程子謙-2026-05-22",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "地方首長 程子謙議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「地方首長 程子謙」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/budget-%E5%9C%B0%E6%96%B9%E9%A6%96%E9%95%B7-%E7%A8%8B%E5%AD%90%E8%AC%99-2026-05-22.html"
+    },
+    {
+      "id": "budget-中部-產業-2026-05-22",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "中部 產業議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「中部 產業」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/budget-%E4%B8%AD%E9%83%A8-%E7%94%A2%E6%A5%AD-2026-05-22.html"
+    },
+    {
+      "id": "budget-中部-公車-2026-05-22",
+      "topic": "budget",
+      "topicLabel": "財經",
+      "title": "中部 公車議題整理，後續影響與資料待查核",
+      "summary": "根據自動抓取來源摘要，「中部 公車」近期與財經議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。",
+      "status": "待審核",
+      "updated": "2026-05-22",
+      "path": "articles/budget-%E4%B8%AD%E9%83%A8-%E5%85%AC%E8%BB%8A-2026-05-22.html"
+    },
+    {
       "id": "transport-捷運-2026-05-20",
       "topic": "transport",
       "topicLabel": "交通",
