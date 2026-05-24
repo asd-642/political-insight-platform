@@ -31,6 +31,12 @@ const blacklistState = {
   message: "",
   error: "",
 };
+const dailyDraftState = {
+  loading: false,
+  status: null,
+  message: "",
+  error: "",
+};
 let keywordDraftLoading = false;
 const defaultTopicNames = {
   budget: "財經",
@@ -50,7 +56,10 @@ function hasAdminAccess() {
 async function resolveAdminAccess() {
   try {
     const api = await window.PolicyPulseFirebaseReady;
-    if (api?.enabled) return Boolean(api.isAdmin?.());
+    if (api?.enabled) {
+      if (api.resolveAdminAccess) return Boolean(await api.resolveAdminAccess());
+      return Boolean(api.isAdmin?.());
+    }
   } catch {
     // Fall back to local preview access below.
   }
@@ -58,12 +67,14 @@ async function resolveAdminAccess() {
 }
 
 function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  return window.PolicyPulseUtils?.escapeHtml
+    ? window.PolicyPulseUtils.escapeHtml(value)
+    : String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
 }
 
 function isLocalPreview() {
@@ -108,6 +119,7 @@ function countBy(events, type) {
 }
 
 function formatTime(value) {
+  if (window.PolicyPulseUtils?.formatTime) return window.PolicyPulseUtils.formatTime(value);
   try {
     return new Intl.DateTimeFormat("zh-Hant-TW", {
       month: "2-digit",
@@ -133,6 +145,20 @@ function topArticles(events) {
     .slice(0, 8);
 }
 
+function createAdminCard(label, value) {
+  const card = document.createElement("article");
+  card.className = "admin-card";
+
+  const labelNode = document.createElement("span");
+  labelNode.textContent = label;
+
+  const valueNode = document.createElement("strong");
+  valueNode.textContent = String(value);
+
+  card.append(labelNode, valueNode);
+  return card;
+}
+
 function renderCards(events) {
   const cards = [
     ["總事件", events.length],
@@ -141,12 +167,20 @@ function renderCards(events) {
     ["搜尋次數", countBy(events, "search")],
   ];
 
-  document.querySelector("#adminStats").innerHTML = cards
+  const container = document.querySelector("#adminStats");
+  if (window.PolicyPulseUtils?.replaceChildren) {
+    window.PolicyPulseUtils.replaceChildren(
+      container,
+      cards.map(([label, value]) => createAdminCard(label, value)),
+    );
+    return;
+  }
+  container.innerHTML = cards
     .map(
       ([label, value]) => `
         <article class="admin-card">
-          <span>${label}</span>
-          <strong>${value}</strong>
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(value)}</strong>
         </article>
       `,
     )
@@ -277,6 +311,138 @@ async function draftApi(path, options = {}) {
   return localDraftApi(path, options);
 }
 
+function dailyDraftApiUrl(status = false) {
+  const path = `/api/daily-drafts${status ? "?status=1" : ""}`;
+  return isLocalPreview() ? `https://policypulse.tw${path}` : path;
+}
+
+async function firebaseIdToken() {
+  const api = await window.PolicyPulseFirebaseReady;
+  const user = api?.getCurrentUser?.();
+  const token = await user?.getIdToken?.();
+  if (!token) throw new Error("請先用管理員帳號登入。");
+  return token;
+}
+
+async function dailyDraftApi(status = false, options = {}) {
+  const token = await firebaseIdToken();
+  const response = await fetch(dailyDraftApiUrl(status), {
+    method: status ? "GET" : "POST",
+    ...options,
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+      ...options.headers,
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.ok === false) {
+    throw new Error(data.error || `每日產稿服務回應失敗：${response.status}`);
+  }
+  return data;
+}
+
+function setDailyDraftLoading(value) {
+  dailyDraftState.loading = value;
+  document.querySelector("#refreshDailyDraftStatus")?.toggleAttribute("disabled", value);
+  document.querySelector("#runDailyDraftsNow")?.toggleAttribute("disabled", value);
+}
+
+function renderDailyDraftStatus() {
+  const status = document.querySelector("#dailyDraftStatus");
+  const details = document.querySelector("#dailyDraftDetails");
+  if (!status || !details) return;
+
+  status.className = `draft-status${dailyDraftState.error ? " is-error" : ""}`;
+  status.textContent = dailyDraftState.error || dailyDraftState.message || "";
+
+  const latest = dailyDraftState.status?.latest;
+  if (!latest) {
+    details.innerHTML = `
+      <div class="draft-empty">
+        <strong>還沒有排程紀錄</strong>
+        <span>部署後可以按「補跑今日產稿」測試一次。</span>
+      </div>
+    `;
+    return;
+  }
+
+  if (latest.error) {
+    details.innerHTML = `
+      <div class="draft-empty">
+        <strong>暫時無法讀取上次紀錄</strong>
+        <span>${escapeHtml(latest.error)}</span>
+      </div>
+    `;
+    return;
+  }
+
+  const configured = dailyDraftState.status.configured || {};
+  const rows = [
+    ["排程時間", dailyDraftState.status.schedule?.taipei || "每天 06:30"],
+    ["上次執行", latest.finishedAt ? formatTime(latest.finishedAt) : "尚無"],
+    ["要求篇數", latest.requested ?? "尚無"],
+    ["建立草稿", latest.createdCount ?? latest.created?.length ?? 0],
+    ["略過項目", latest.skippedCount ?? latest.skipped?.length ?? 0],
+    ["排程密鑰", configured.cronSecret ? "已設定" : "未設定"],
+    ["Firebase 服務帳號", configured.firebaseServiceAccount ? "已設定" : "未設定"],
+  ];
+  details.innerHTML = rows
+    .map(([label, value]) => `
+      <div class="admin-row compact-row">
+        <strong>${escapeHtml(label)}</strong>
+        <span>${escapeHtml(value)}</span>
+      </div>
+    `)
+    .join("");
+}
+
+async function loadDailyDraftStatus() {
+  if (!hasAdminAccess()) return;
+  setDailyDraftLoading(true);
+  dailyDraftState.error = "";
+  dailyDraftState.message = "正在檢查每日產稿狀態...";
+  renderDailyDraftStatus();
+
+  try {
+    dailyDraftState.status = await dailyDraftApi(true);
+    const latest = dailyDraftState.status.latest;
+    dailyDraftState.message = latest?.finishedAt
+      ? `上次每日產稿：建立 ${latest.createdCount || 0} 篇，略過 ${latest.skippedCount || 0} 項。`
+      : "每日產稿尚未留下執行紀錄。";
+  } catch (error) {
+    dailyDraftState.error = error.message || "無法檢查每日產稿狀態。";
+  } finally {
+    setDailyDraftLoading(false);
+    renderDailyDraftStatus();
+  }
+}
+
+async function runDailyDraftsNow() {
+  if (!hasAdminAccess() || dailyDraftState.loading) return;
+  setDailyDraftLoading(true);
+  dailyDraftState.error = "";
+  dailyDraftState.message = "正在補跑今日自動產稿...";
+  renderDailyDraftStatus();
+
+  try {
+    const result = await dailyDraftApi(false);
+    dailyDraftState.status = {
+      ok: true,
+      schedule: { taipei: "每天 06:30" },
+      configured: {},
+      latest: result,
+    };
+    dailyDraftState.message = `補跑完成：建立 ${result.createdCount || 0} 篇，略過 ${result.skippedCount || 0} 項。`;
+    await loadDrafts();
+  } catch (error) {
+    dailyDraftState.error = error.message || "補跑每日產稿失敗。";
+  } finally {
+    setDailyDraftLoading(false);
+    renderDailyDraftStatus();
+  }
+}
+
 function readLocalModerationComments() {
   const comments = [];
   for (let index = 0; index < localStorage.length; index += 1) {
@@ -366,6 +532,16 @@ function renderCommentModeration() {
     .join("");
 }
 
+function isFirebasePermissionError(error) {
+  const text = `${error?.code || ""} ${error?.message || ""}`.toLowerCase();
+  return text.includes("permission") || text.includes("insufficient");
+}
+
+function friendlyCommentError(error) {
+  if (!isFirebasePermissionError(error)) return error.message || "留言管理讀取失敗。";
+  return "留言管理權限尚未套用。請把最新 Firestore 規則發布到 Firebase，或確認目前登入帳號已列入管理員。";
+}
+
 async function loadCommentsForAdmin() {
   if (!hasAdminAccess()) return;
   commentState.loading = true;
@@ -389,7 +565,7 @@ async function loadCommentsForAdmin() {
       : "目前沒有留言。";
   } catch (error) {
     commentState.items = [];
-    commentState.error = error.message;
+    commentState.error = friendlyCommentError(error);
     commentState.message = "";
   } finally {
     commentState.loading = false;
@@ -799,6 +975,7 @@ async function renderAdmin() {
   renderArticles(events);
   renderEvents(events);
   loadKeywordBlacklist();
+  loadDailyDraftStatus();
   loadDrafts();
   loadCommentsForAdmin();
 }
@@ -811,6 +988,8 @@ function bindAdminActions() {
     renderAdmin();
   });
   document.querySelector("#refreshDrafts")?.addEventListener("click", loadDrafts);
+  document.querySelector("#refreshDailyDraftStatus")?.addEventListener("click", loadDailyDraftStatus);
+  document.querySelector("#runDailyDraftsNow")?.addEventListener("click", runDailyDraftsNow);
   document.querySelector("#refreshComments")?.addEventListener("click", loadCommentsForAdmin);
   document.querySelector("#refreshKeywordBlacklist")?.addEventListener("click", loadKeywordBlacklist);
   document.querySelector("#saveKeywordBlacklist")?.addEventListener("click", saveKeywordBlacklist);
