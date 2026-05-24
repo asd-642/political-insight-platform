@@ -564,9 +564,11 @@ async function loadCommentsForAdmin() {
       ? `目前有 ${commentState.items.length} 則留言可管理。`
       : "目前沒有留言。";
   } catch (error) {
-    commentState.items = [];
-    commentState.error = friendlyCommentError(error);
-    commentState.message = "";
+    commentState.items = readLocalModerationComments();
+    commentState.error = "";
+    commentState.message = commentState.items.length
+      ? "Firebase 留言讀取暫時不可用，先顯示本機留言紀錄。"
+      : friendlyCommentError(error);
   } finally {
     commentState.loading = false;
     renderCommentModeration();

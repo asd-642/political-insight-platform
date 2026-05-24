@@ -301,8 +301,10 @@
           docAdmin = false;
         }
 
+        const emailAdmin = isAdminEmail(user.email) && user.emailVerified !== false;
+
         adminAccessCache.uid = user.uid;
-        adminAccessCache.value = Boolean(claimAdmin || docAdmin);
+        adminAccessCache.value = Boolean(claimAdmin || docAdmin || emailAdmin);
         adminAccessCache.pending = null;
         return adminAccessCache.value;
       })();
@@ -712,14 +714,19 @@
       let snapshot;
       try {
         snapshot = await firestoreModule.getDocs(commentsRef);
-      } catch {
-        snapshot = await firestoreModule.getDocs(
-          firestoreModule.query(
-            commentsRef,
-            firestoreModule.where("status", "==", "visible"),
-            firestoreModule.limit(limitCount),
-          ),
-        );
+      } catch (firstError) {
+        try {
+          snapshot = await firestoreModule.getDocs(
+            firestoreModule.query(
+              commentsRef,
+              firestoreModule.where("status", "==", "visible"),
+              firestoreModule.limit(limitCount),
+            ),
+          );
+        } catch (secondError) {
+          console.warn("Comment moderation read is not available yet.", firstError, secondError);
+          return [];
+        }
       }
       const comments = snapshot.docs
         .map(normalizeComment);
