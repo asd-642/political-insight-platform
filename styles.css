@@ -2641,6 +2641,10 @@ body.auth-locked > .site-footer {
   overflow-wrap: anywhere;
 }
 
+.admin-row.compact-row {
+  grid-template-columns: minmax(140px, 0.4fr) minmax(0, 1fr);
+}
+
 .keyword-draft-form {
   display: grid;
   grid-template-columns: minmax(220px, 1.2fr) minmax(150px, 0.7fr) minmax(110px, 0.4fr);

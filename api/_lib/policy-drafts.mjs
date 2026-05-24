@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { documentExists, getDocument, setDocument } from "./firestore-rest.mjs";
 
+const DEFAULT_FETCH_TIMEOUT_MS = 1800;
+
 const topicMeta = {
   budget: { name: "財經", image: "assets/hero-market.png" },
   housing: { name: "居住", image: "assets/housing.png" },
@@ -141,8 +143,12 @@ function parseRss(xml, sourceName) {
 }
 
 async function fetchRecords(keyword) {
+  const timeoutMs = Math.max(
+    700,
+    Math.min(4500, Number(process.env.DAILY_DRAFT_FETCH_TIMEOUT_MS || DEFAULT_FETCH_TIMEOUT_MS) || DEFAULT_FETCH_TIMEOUT_MS),
+  );
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 4500);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(googleNewsUrl(keyword), {
       headers: { "user-agent": "PolicyPulseBot/0.3 daily draft research" },
@@ -194,8 +200,12 @@ function findBlockedKeywords(value, blockedKeywords = []) {
 }
 
 async function readKeywordBlacklist() {
-  const policy = await getDocument("settings", "contentPolicy");
-  return normalizeBlockedKeywords(policy.data?.blockedKeywords || []);
+  try {
+    const policy = await getDocument("settings", "contentPolicy");
+    return normalizeBlockedKeywords(policy.data?.blockedKeywords || []);
+  } catch (error) {
+    return [];
+  }
 }
 
 function buildSections({ keyword, topicName, records, support, concern, next }) {
@@ -404,14 +414,29 @@ async function createDraftFromPick(pick, config, blockedKeywords) {
   if (await documentExists("articles", draft.id)) {
     return { skipped: true, reason: "alreadyPublished", pick, draft };
   }
-  if (await documentExists("drafts", draft.id)) {
-    return { skipped: true, reason: "alreadyDrafted", pick, draft };
-  }
   await setDocument("drafts", draft.id, draft);
   return { created: true, pick, draft };
 }
 
+async function writeRunReport(result, extra = {}) {
+  const report = {
+    ...result,
+    ...extra,
+    createdCount: result.created.length,
+    skippedCount: result.skipped.length,
+    finishedAt: new Date().toISOString(),
+  };
+  try {
+    await setDocument("automationRuns", "daily-drafts-latest", report);
+    await setDocument("automationRuns", `daily-drafts-${result.date}`, report);
+  } catch {
+    // Draft creation is more important than telemetry. Keep the run successful.
+  }
+  return report;
+}
+
 export async function runDailyDrafts() {
+  const startedAt = new Date().toISOString();
   const config = await loadConfig();
   const blockedKeywords = await readKeywordBlacklist();
   const issueCount = Math.max(1, Math.min(60, Number(config.dailyRandomDrafts?.count || 15) || 15));
@@ -422,7 +447,7 @@ export async function runDailyDrafts() {
     ...personPicks.map((pick) => ({ ...pick, type: "person" })),
   ];
 
-  const results = await mapWithConcurrency(picks, 6, (pick) => createDraftFromPick(pick, config, blockedKeywords));
+  const results = await mapWithConcurrency(picks, 8, (pick) => createDraftFromPick(pick, config, blockedKeywords));
   const created = results.filter((item) => item.created).map((item) => ({
     id: item.draft.id,
     title: item.draft.title,
@@ -438,12 +463,14 @@ export async function runDailyDrafts() {
     blockedKeywords: item.blockedKeywords || [],
   }));
 
-  return {
+  const result = {
     date: taipeiDate(),
     requested: picks.length,
     created,
     skipped,
     issueRequested: issuePicks.length,
     personRequested: personPicks.length,
+    startedAt,
   };
+  return writeRunReport(result);
 }

@@ -1,29 +1,118 @@
+import { getDocument } from "./_lib/firestore-rest.mjs";
 import { runDailyDrafts } from "./_lib/policy-drafts.mjs";
+
+const firebaseWebApiKey = process.env.FIREBASE_WEB_API_KEY || "AIzaSyA6ZmZnNMylKj2Uy9tS_d933fYHHFWkmS8";
+const defaultAdminEmails = ["lutinghui941025@gmail.com"];
 
 function sendJson(response, status, payload) {
   response.statusCode = status;
   response.setHeader("content-type", "application/json; charset=utf-8");
   response.setHeader("cache-control", "no-store");
+  response.setHeader("access-control-allow-origin", "*");
+  response.setHeader("access-control-allow-methods", "GET,POST,OPTIONS");
+  response.setHeader("access-control-allow-headers", "authorization,content-type");
   response.end(JSON.stringify(payload, null, 2));
 }
 
-function isAuthorized(request) {
+function adminEmails() {
+  return (process.env.ADMIN_EMAILS || defaultAdminEmails.join(","))
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function bearerToken(request) {
+  const header = request.headers.authorization || "";
+  return header.startsWith("Bearer ") ? header.slice("Bearer ".length).trim() : "";
+}
+
+async function lookupFirebaseUser(idToken) {
+  if (!idToken) return null;
+  const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseWebApiKey}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ idToken }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = data.error?.message || "Unable to verify Firebase login.";
+    throw new Error(message);
+  }
+  const user = data.users?.[0];
+  if (!user?.localId) return null;
+  return {
+    uid: user.localId,
+    email: String(user.email || "").toLowerCase(),
+  };
+}
+
+async function isAdminToken(idToken) {
+  const user = await lookupFirebaseUser(idToken);
+  if (!user) return false;
+  if (adminEmails().includes(user.email)) return true;
+  const adminDoc = await getDocument("admins", user.uid);
+  return adminDoc.exists;
+}
+
+function isCronAuthorized(request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
-  return request.headers.authorization === `Bearer ${secret}`;
+  return bearerToken(request) === secret;
+}
+
+async function isAuthorized(request) {
+  if (isCronAuthorized(request)) return true;
+  try {
+    return await isAdminToken(bearerToken(request));
+  } catch {
+    return false;
+  }
+}
+
+async function dailyStatus() {
+  const latest = await getDocument("automationRuns", "daily-drafts-latest")
+    .then((doc) => doc.data || null)
+    .catch((error) => ({
+      error: error.message || "無法讀取上次執行紀錄。",
+    }));
+
+  return {
+    ok: true,
+    schedule: {
+      utc: "30 22 * * *",
+      taipei: "每天 06:30",
+    },
+    configured: {
+      cronSecret: Boolean(process.env.CRON_SECRET),
+      firebaseServiceAccount: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
+      firebaseProjectId: Boolean(process.env.FIREBASE_PROJECT_ID),
+    },
+    latest,
+  };
 }
 
 export default async function handler(request, response) {
+  if (request.method === "OPTIONS") {
+    sendJson(response, 204, {});
+    return;
+  }
+
   if (request.method !== "GET" && request.method !== "POST") {
     sendJson(response, 405, { ok: false, error: "Method not allowed." });
     return;
   }
 
-  if (!isAuthorized(request)) {
+  if (!(await isAuthorized(request))) {
     sendJson(response, 401, {
       ok: false,
-      error: "Unauthorized. Set CRON_SECRET in Vercel and let Vercel Cron call this endpoint.",
+      error: "Unauthorized. Vercel Cron must use CRON_SECRET, and manual runs must be started by an admin account.",
     });
+    return;
+  }
+
+  const url = new URL(request.url || "/api/daily-drafts", "https://policypulse.tw");
+  if (url.searchParams.get("status") === "1") {
+    sendJson(response, 200, await dailyStatus());
     return;
   }
 
@@ -38,7 +127,7 @@ export default async function handler(request, response) {
   } catch (error) {
     sendJson(response, 500, {
       ok: false,
-      error: error.message,
+      error: error.message || "Daily draft generation failed.",
     });
   }
 }

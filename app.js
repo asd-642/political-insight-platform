@@ -287,13 +287,13 @@ const ARTICLES_PER_PAGE = 12;
 const FIREBASE_INITIAL_WAIT_MS = 900;
 const FIREBASE_BACKGROUND_WAIT_MS = 10000;
 let firebaseContentSyncStarted = false;
-const escapeHtml = (value) =>
+const escapeHtml = window.PolicyPulseUtils?.escapeHtml || ((value) =>
   String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll("'", "&#039;"));
 
 const topicName = (id) =>
   state.content.topics.find((topic) => topic.id === id)?.name || id;
@@ -301,7 +301,7 @@ const topicName = (id) =>
 const topicImage = (id) =>
   state.content.topics.find((topic) => topic.id === id)?.image || "assets/podium.png";
 
-const articleUrl = (id) => `articles/${encodeURIComponent(id)}.html`;
+const articleUrl = window.PolicyPulseUtils?.articleUrl || ((id) => `articles/${encodeURIComponent(id)}.html`);
 
 const articleImage = (article) =>
   window.PolicyPulseVisuals?.articleImage?.(article, topicName(article.topic)) ||

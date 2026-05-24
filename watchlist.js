@@ -10,15 +10,18 @@
   };
   let articlesCache = null;
 
-  const unique = (items = []) => [...new Set(items.map((item) => String(item || "").trim()).filter(Boolean))];
+  const unique = window.PolicyPulseUtils?.unique ||
+    ((items = []) => [...new Set(items.map((item) => String(item || "").trim()).filter(Boolean))]);
 
   function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+    return window.PolicyPulseUtils?.escapeHtml
+      ? window.PolicyPulseUtils.escapeHtml(value)
+      : String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
   }
 
   function read() {
@@ -37,7 +40,9 @@
   }
 
   function articleUrl(id) {
-    return `articles/${encodeURIComponent(id)}.html`;
+    return window.PolicyPulseUtils?.articleUrl
+      ? window.PolicyPulseUtils.articleUrl(id)
+      : `articles/${encodeURIComponent(id)}.html`;
   }
 
   function findGeneratedArticles() {

@@ -1,10 +1,12 @@
 function articleEscape(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  return window.PolicyPulseUtils?.escapeHtml
+    ? window.PolicyPulseUtils.escapeHtml(value)
+    : String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
 }
 
 function getArticleId() {
@@ -15,7 +17,9 @@ function getArticleId() {
 }
 
 function articlePageUrl(id) {
-  return `articles/${encodeURIComponent(id)}.html`;
+  return window.PolicyPulseUtils?.articleUrl
+    ? window.PolicyPulseUtils.articleUrl(id)
+    : `articles/${encodeURIComponent(id)}.html`;
 }
 
 function currentContent() {
