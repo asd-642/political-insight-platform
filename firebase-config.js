@@ -11,3 +11,15 @@ window.PolicyPulseFirebaseConfig = {
     measurementId: "G-8LLLXL1TY1",
   },
 };
+
+(function loadAdminDailyBackfill() {
+  const path = window.location.pathname.replace(/\/$/, "/index.html");
+  const isAdminPage = path.endsWith("/admin.html") || path.endsWith("/admin");
+  if (!isAdminPage) return;
+
+  window.addEventListener("load", () => {
+    const script = document.createElement("script");
+    script.src = "admin-daily-backfill.js?v=20260524-1";
+    document.body.appendChild(script);
+  });
+})();
