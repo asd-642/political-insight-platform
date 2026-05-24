@@ -7,6 +7,8 @@
     ready: false,
     adminEmails,
     isAdminEmail: (email) => adminEmails.includes(String(email || "").toLowerCase()),
+    isAdmin: () => false,
+    resolveAdminAccess: async () => false,
   };
 
   window.PolicyPulseFirebase = disabledApi;
@@ -258,7 +260,59 @@
     const serverNow = () => firestoreModule.serverTimestamp();
     const getCurrentUser = () => auth.currentUser;
     const isAdminEmail = (email) => adminEmails.includes(String(email || "").toLowerCase());
-    const isAdmin = () => isAdminEmail(auth.currentUser?.email);
+    const adminAccessCache = {
+      uid: "",
+      value: false,
+      pending: null,
+    };
+    const isAdmin = () =>
+      Boolean(
+        auth.currentUser
+          && adminAccessCache.uid === auth.currentUser.uid
+          && adminAccessCache.value,
+      );
+    async function resolveAdminAccess({ force = false } = {}) {
+      const user = auth.currentUser;
+      if (!user) {
+        adminAccessCache.uid = "";
+        adminAccessCache.value = false;
+        adminAccessCache.pending = null;
+        return false;
+      }
+      if (!force && adminAccessCache.uid === user.uid && adminAccessCache.value) {
+        return true;
+      }
+      if (!force && adminAccessCache.pending) return adminAccessCache.pending;
+
+      adminAccessCache.pending = (async () => {
+        let claimAdmin = false;
+        try {
+          const token = await user.getIdTokenResult();
+          claimAdmin = token.claims?.admin === true || token.claims?.role === "admin";
+        } catch {
+          claimAdmin = false;
+        }
+
+        let docAdmin = false;
+        try {
+          const snapshot = await firestoreModule.getDoc(firestoreModule.doc(db, "admins", user.uid));
+          docAdmin = snapshot.exists();
+        } catch {
+          docAdmin = false;
+        }
+
+        adminAccessCache.uid = user.uid;
+        adminAccessCache.value = Boolean(claimAdmin || docAdmin);
+        adminAccessCache.pending = null;
+        return adminAccessCache.value;
+      })();
+
+      return adminAccessCache.pending;
+    }
+    async function requireAdmin() {
+      if (await resolveAdminAccess()) return;
+      throw new Error("目前登入帳號不是管理員。");
+    }
     const contentPolicyRef = () => firestoreModule.doc(db, "settings", "contentPolicy");
 
     function createGoogleProvider() {
@@ -388,7 +442,7 @@
     }
 
     async function listDrafts() {
-      if (!isAdmin()) throw new Error("目前登入帳號不是管理員。");
+      await requireAdmin();
       const draftsRef = firestoreModule.collection(db, "drafts");
       let snapshot;
       try {
@@ -402,7 +456,7 @@
     }
 
     async function approveDrafts(files) {
-      if (!isAdmin()) throw new Error("目前登入帳號不是管理員。");
+      await requireAdmin();
       const batch = firestoreModule.writeBatch(db);
       const publishedAt = new Date().toISOString();
       const published = [];
@@ -439,7 +493,7 @@
     }
 
     async function rejectDrafts(files) {
-      if (!isAdmin()) throw new Error("目前登入帳號不是管理員。");
+      await requireAdmin();
       const batch = firestoreModule.writeBatch(db);
       const rejected = [];
       for (const file of files) {
@@ -460,7 +514,7 @@
     }
 
     async function createKeywordDrafts(options = {}) {
-      if (!isAdmin()) throw new Error("目前登入帳號不是管理員。");
+      await requireAdmin();
       const topic = String(options.topic || "budget");
       const sourceUrls = Array.isArray(options.sourceUrls)
         ? options.sourceUrls.map((item) => String(item).trim()).filter(Boolean)
@@ -504,13 +558,13 @@
     }
 
     async function getKeywordBlacklist() {
-      if (!isAdmin()) throw new Error("目前登入帳號不是管理員。");
+      await requireAdmin();
       const snapshot = await firestoreModule.getDoc(contentPolicyRef());
       return normalizeBlockedKeywords(snapshot.exists() ? snapshot.data()?.blockedKeywords || [] : []);
     }
 
     async function saveKeywordBlacklist(blockedKeywords = []) {
-      if (!isAdmin()) throw new Error("目前登入帳號不是管理員。");
+      await requireAdmin();
       const next = normalizeBlockedKeywords(blockedKeywords);
       await firestoreModule.setDoc(contentPolicyRef(), {
         blockedKeywords: next,
@@ -653,8 +707,20 @@
     }
 
     async function listRecentComments(limitCount = 80) {
-      if (!isAdmin()) return [];
-      const snapshot = await firestoreModule.getDocs(firestoreModule.collection(db, "comments"));
+      if (!(await resolveAdminAccess())) return [];
+      const commentsRef = firestoreModule.collection(db, "comments");
+      let snapshot;
+      try {
+        snapshot = await firestoreModule.getDocs(commentsRef);
+      } catch {
+        snapshot = await firestoreModule.getDocs(
+          firestoreModule.query(
+            commentsRef,
+            firestoreModule.where("status", "==", "visible"),
+            firestoreModule.limit(limitCount),
+          ),
+        );
+      }
       const comments = snapshot.docs
         .map(normalizeComment);
       const enriched = await enrichComments(comments);
@@ -667,7 +733,7 @@
     }
 
     async function hideComment(commentId) {
-      if (!isAdmin()) throw new Error("目前登入帳號不是管理員。");
+      await requireAdmin();
       await firestoreModule.updateDoc(firestoreModule.doc(db, "comments", commentId), {
         status: "hidden",
         hiddenAt: new Date().toISOString(),
@@ -678,7 +744,7 @@
     }
 
     async function deleteComment(commentId) {
-      if (!isAdmin()) throw new Error("目前登入帳號不是管理員。");
+      await requireAdmin();
       await firestoreModule.deleteDoc(firestoreModule.doc(db, "comments", commentId));
       return { id: commentId };
     }
@@ -697,7 +763,7 @@
     }
 
     async function readEvents(limitCount = 80) {
-      if (!isAdmin()) return [];
+      if (!(await resolveAdminAccess())) return [];
       const snapshot = await firestoreModule.getDocs(
         firestoreModule.query(
           firestoreModule.collection(db, "events"),
@@ -724,6 +790,7 @@
       getCurrentUser,
       isAdminEmail,
       isAdmin,
+      resolveAdminAccess,
       signInWithGoogle,
       createEmailUser,
       signInWithEmail,
