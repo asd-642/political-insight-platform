@@ -16,6 +16,7 @@
     </script>
     <title>後台統計｜政策脈絡</title>
     <meta name="robots" content="noindex,nofollow" />
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     <link rel="stylesheet" href="styles.css?v=20260520-7" />
   </head>
   <body class="doc-page admin-page">
@@ -145,6 +146,21 @@
           <div id="keywordBlacklistStatus" class="draft-status">正在讀取黑名單...</div>
         </section>
 
+        <section class="admin-table daily-drafts-panel">
+          <div class="admin-table-head">
+            <div>
+              <p class="eyebrow">Daily Writer</p>
+              <h2>每日自動產稿</h2>
+            </div>
+            <div class="admin-actions compact">
+              <button id="refreshDailyDraftStatus" class="admin-button" type="button">檢查狀態</button>
+              <button id="runDailyDraftsNow" class="admin-button primary" type="button">補跑今日產稿</button>
+            </div>
+          </div>
+          <div id="dailyDraftStatus" class="draft-status">正在檢查每日產稿狀態...</div>
+          <div id="dailyDraftDetails" class="daily-draft-details"></div>
+        </section>
+
         <section class="admin-table draft-review-panel">
           <div class="admin-table-head">
             <div>
@@ -195,6 +211,7 @@
       </section>
     </main>
 
+    <script src="utils.js?v=20260524-1"></script>
     <script src="firebase-config.js"></script>
     <script src="firebase-bootstrap.js?v=20260520-2"></script>
     <script src="auth-theme.js?v=20260520-1"></script>
