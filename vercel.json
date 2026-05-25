@@ -1,6 +1,16 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/articles/:id.html",
+      "destination": "/article.html?id=:id"
+    },
+    {
+      "source": "/articles/:id",
+      "destination": "/article.html?id=:id"
+    }
+  ],
   "functions": {
     "api/*.mjs": {
       "maxDuration": 60
