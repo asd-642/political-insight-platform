@@ -852,7 +852,7 @@ function renderIssueMap() {
       card.setAttribute("role", "button");
       card.setAttribute("aria-label", `查看${topic.name}相關文章`);
       const image =
-        window.PolicyPulseVisuals?.generatedCover?.(
+        window.PolicyPulseVisuals?.realPhotoCover?.(
           {
             id: topic.id,
             topic: topic.id,
