@@ -44,18 +44,44 @@ function unique(items) {
   return [...new Set(items.filter(Boolean))];
 }
 
-function randomItem(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
-function randomBetween(min, max) {
-  return Math.floor(min + Math.random() * Math.max(1, max - min + 1));
+function randomItem(items, random = Math.random) {
+  return items[Math.floor(random() * items.length)];
 }
 
 function shuffle(items) {
   const copy = [...items];
   for (let index = copy.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
+}
+
+function hashString(input) {
+  let hash = 2166136261;
+  for (const char of String(input || "")) {
+    hash ^= char.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function seededRandom(seedText) {
+  let seed = hashString(seedText) || 1;
+  return () => {
+    seed += 0x6D2B79F5;
+    let value = seed;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle(items, seedText) {
+  const random = seededRandom(seedText);
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
     [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
   }
   return copy;
@@ -349,26 +375,27 @@ function buildTopicPicks(config, count) {
   return picks;
 }
 
-function topicForPerson(person, config) {
+function topicForPerson(person, config, random = Math.random) {
   const hints = Array.isArray(person.topicHints) ? person.topicHints.filter((topic) => config.topicKeywords?.[topic]) : [];
-  if (hints.length) return randomItem(hints);
+  if (hints.length) return randomItem(hints, random);
   return Object.keys(config.topicKeywords || {})[0] || "budget";
 }
 
-function keywordForPerson(person, topic, config) {
+function keywordForPerson(person, topic, config, random = Math.random) {
   const topicName = config.topicNames?.[topic] || topic;
   const focusParts = String(person.focus || topicName).split(/[,，、]/).map((item) => item.trim()).filter(Boolean);
-  const focus = randomItem(focusParts.length ? focusParts : [topicName]);
+  const focus = randomItem(focusParts.length ? focusParts : [topicName], random);
   return randomItem([
     `${person.name} ${focus}`,
     `${person.area} ${focus}`,
     `${person.role} ${person.name}`,
     `${person.area} ${topicName} 政策`,
     `${person.name} ${topicName} 追蹤`,
-  ]);
+  ], random);
 }
 
 function buildPersonPicks(config) {
+  const runDate = taipeiDate();
   const settings = config.personRegionDrafts || {};
   const minDrafts = Math.max(1, Number(settings.minDraftsPerArea || 2) || 2);
   const maxDrafts = Math.max(minDrafts, Number(settings.maxDraftsPerArea || 4) || 4);
@@ -376,14 +403,16 @@ function buildPersonPicks(config) {
   const byArea = groupBy(people, (person) => person.area);
 
   return Object.entries(byArea).flatMap(([area, areaPeople]) => {
-    const count = randomBetween(minDrafts, maxDrafts);
-    const selected = shuffle(areaPeople).slice(0, Math.min(count, areaPeople.length));
+    const areaRandom = seededRandom(`${runDate}:${area}:count`);
+    const count = Math.floor(minDrafts + areaRandom() * Math.max(1, maxDrafts - minDrafts + 1));
+    const selected = seededShuffle(areaPeople, `${runDate}:${area}:people`).slice(0, Math.min(count, areaPeople.length));
     while (selected.length < count && areaPeople.length) selected.push(randomItem(areaPeople));
-    return selected.map((person) => {
-      const topic = topicForPerson(person, config);
+    return selected.map((person, index) => {
+      const personRandom = seededRandom(`${runDate}:${area}:${person.id}:${index}`);
+      const topic = topicForPerson(person, config, personRandom);
       return {
         topic,
-        keyword: keywordForPerson(person, topic, config),
+        keyword: keywordForPerson(person, topic, config, personRandom),
         person: { ...person, area },
       };
     });

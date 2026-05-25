@@ -30,6 +30,14 @@ function isLoopbackIpHost() {
   return location.hostname === "127.0.0.1";
 }
 
+function isLocalDevelopmentHost() {
+  return ["localhost", "127.0.0.1", ""].includes(location.hostname);
+}
+
+function isOfficialHost() {
+  return ["policypulse.tw", "www.policypulse.tw"].includes(location.hostname);
+}
+
 function redirectToLocalhostForGoogle(message) {
   const next = new URL(location.href);
   next.hostname = "localhost";
@@ -42,7 +50,11 @@ function redirectToLocalhostForGoogle(message) {
 
 function explainGoogleAuthError(error) {
   if (error?.code === "auth/unauthorized-domain") {
-    return "Firebase 尚未授權目前網域。請在 Firebase Authentication 的 Authorized domains 加入 localhost 和 127.0.0.1。";
+    const host = location.hostname || "目前網域";
+    const domains = isOfficialHost()
+      ? "policypulse.tw 和 www.policypulse.tw"
+      : "localhost 和 127.0.0.1";
+    return `Firebase 尚未授權 ${host}。請在 Firebase Authentication 的 Authorized domains 加入 ${domains}。`;
   }
   return `Google 登入失敗：${error?.message || "未知錯誤"}`;
 }
@@ -336,6 +348,9 @@ function showAuthOverlay() {
   if (document.querySelector("#authLock")) return;
   document.body.classList.add("auth-locked");
   const firebaseReady = firebaseEnabled();
+  const allowDemoAccess = isLocalDevelopmentHost();
+  const defaultEmail = allowDemoAccess ? demoUser.email : "";
+  const defaultPassword = allowDemoAccess ? demoUser.password : "";
 
   const overlay = document.createElement("section");
   overlay.id = "authLock";
@@ -350,11 +365,11 @@ function showAuthOverlay() {
       <form id="authForm" class="auth-form">
         <label class="auth-field auth-field-plain">
           <span class="sr-only">信箱</span>
-          <input id="authEmail" type="email" autocomplete="email" placeholder="輸入電子郵件信箱/使用者名稱" value="${demoUser.email}" required />
+          <input id="authEmail" type="email" autocomplete="email" placeholder="輸入電子郵件信箱/使用者名稱" value="${defaultEmail}" required />
         </label>
         <label class="auth-field auth-field-plain">
           <span class="sr-only">密碼</span>
-          <input id="authPassword" type="password" autocomplete="current-password" placeholder="輸入密碼" value="${demoUser.password}" required />
+          <input id="authPassword" type="password" autocomplete="current-password" placeholder="輸入密碼" value="${defaultPassword}" required />
         </label>
         <div class="auth-helper-row">
           <a class="auth-link-button" href="register.html">立即註冊</a>
@@ -380,7 +395,7 @@ function showAuthOverlay() {
           </button>
         </div>
         <div class="auth-bottom-row">
-          <button class="auth-ghost" data-auth-action="demo" type="button">使用示範帳號</button>
+          ${allowDemoAccess ? '<button class="auth-ghost" data-auth-action="demo" type="button">使用示範帳號</button>' : ""}
           <button class="auth-ghost" data-auth-action="theme" type="button">切換明暗色</button>
           <button class="auth-ghost" data-auth-action="close" type="button">稍後再說</button>
         </div>
@@ -446,7 +461,7 @@ function showAuthOverlay() {
     await login(readForm());
   });
 
-  overlay.querySelector('[data-auth-action="demo"]').addEventListener("click", async () => {
+  overlay.querySelector('[data-auth-action="demo"]')?.addEventListener("click", async () => {
     await login(demoUser);
   });
 
@@ -518,7 +533,7 @@ async function maybeStartGoogleLogin(api) {
 
 async function initAuthTheme() {
   initTheme();
-  await ensureDemoUser();
+  if (isLocalDevelopmentHost()) await ensureDemoUser();
   recordEvent("page_view", { title: document.title });
 
   document.querySelector("#themeToggle")?.addEventListener("click", toggleTheme);

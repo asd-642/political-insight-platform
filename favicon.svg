@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="政策脈絡">
+  <rect width="64" height="64" rx="12" fill="#101820"/>
+  <rect x="7" y="7" width="50" height="50" rx="8" fill="#16222b" stroke="#d9b64e" stroke-width="2"/>
+  <text x="32" y="41" text-anchor="middle" font-family="Arial, 'Noto Sans TC', sans-serif" font-size="30" font-weight="800" fill="#ffffff">政</text>
+</svg>

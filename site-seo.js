@@ -1,6 +1,17 @@
 (function setupSiteSeo() {
   const canonicalUrl = new URL(location.href);
   canonicalUrl.hash = "";
+  const urlParams = new URLSearchParams(location.search);
+  const articleQueryId = urlParams.get("id");
+  const isArticleShell = canonicalUrl.pathname.endsWith("/article.html") && articleQueryId;
+  if (!isArticleShell) canonicalUrl.search = "";
+  if (canonicalUrl.pathname.endsWith("/index.html")) canonicalUrl.pathname = "/";
+  const siteName = "政策脈絡";
+  const siteTitle = "政策脈絡｜台灣公共政策、人物與事件追蹤";
+  const siteDescription =
+    "政策脈絡整理台灣公共政策、政治人物、事件時間線與資料來源，追蹤財經、居住、能源、交通、勞工與教育議題，協助讀者快速理解政策背景與後續發展。";
+  const siteImage = `${canonicalUrl.origin}/assets/podium.png`;
+  const faviconUrl = `${canonicalUrl.origin}/favicon.svg`;
   const staticPages = new Set([
     "",
     "index",
@@ -46,9 +57,30 @@
   }
 
   upsertLink("canonical", canonicalUrl.href);
-  upsertMeta('meta[property="og:site_name"]', { property: "og:site_name", content: "政策脈絡" });
+  upsertLink("icon", faviconUrl);
+  const icon = document.head.querySelector('link[rel="icon"]');
+  icon?.setAttribute("type", "image/svg+xml");
+  icon?.setAttribute("sizes", "any");
+  upsertMeta('meta[name="application-name"]', { name: "application-name", content: siteName });
+  upsertMeta('meta[name="apple-mobile-web-app-title"]', { name: "apple-mobile-web-app-title", content: siteName });
+  upsertMeta('meta[name="theme-color"]', { name: "theme-color", content: "#071719" });
+  upsertMeta('meta[property="og:site_name"]', { property: "og:site_name", content: siteName });
   upsertMeta('meta[property="og:locale"]', { property: "og:locale", content: "zh_TW" });
   upsertMeta('meta[property="og:url"]', { property: "og:url", content: canonicalUrl.href });
+  upsertMeta('meta[property="og:type"]', { property: "og:type", content: "website" });
+  upsertMeta('meta[property="og:title"]', { property: "og:title", content: document.title || siteTitle });
+  upsertMeta('meta[property="og:description"]', {
+    property: "og:description",
+    content: document.querySelector('meta[name="description"]')?.content || siteDescription,
+  });
+  upsertMeta('meta[property="og:image"]', { property: "og:image", content: siteImage });
+  upsertMeta('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" });
+  upsertMeta('meta[name="twitter:title"]', { name: "twitter:title", content: document.title || siteTitle });
+  upsertMeta('meta[name="twitter:description"]', {
+    name: "twitter:description",
+    content: document.querySelector('meta[name="description"]')?.content || siteDescription,
+  });
+  upsertMeta('meta[name="twitter:image"]', { name: "twitter:image", content: siteImage });
 
   if (!document.querySelector("#siteStructuredData")) {
     const schema = document.createElement("script");
@@ -57,14 +89,33 @@
     schema.textContent = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: "政策脈絡",
-      url: canonicalUrl.origin,
+      name: siteName,
+      alternateName: ["Policy Pulse TW", "Policy Pulse"],
+      url: `${canonicalUrl.origin}/`,
+      description: siteDescription,
       inLanguage: "zh-Hant-TW",
+      publisher: { "@id": `${canonicalUrl.origin}/#organization` },
       potentialAction: {
         "@type": "SearchAction",
-        target: `${canonicalUrl.origin}/index.html?search={search_term_string}`,
+        target: `${canonicalUrl.origin}/?search={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
+    });
+    document.head.append(schema);
+  }
+
+  if (!document.querySelector("#organizationStructuredData")) {
+    const schema = document.createElement("script");
+    schema.id = "organizationStructuredData";
+    schema.type = "application/ld+json";
+    schema.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": `${canonicalUrl.origin}/#organization`,
+      name: siteName,
+      url: `${canonicalUrl.origin}/`,
+      logo: siteImage,
+      description: siteDescription,
     });
     document.head.append(schema);
   }

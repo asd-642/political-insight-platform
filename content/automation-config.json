@@ -256,6 +256,150 @@
       "focus": "財經、交通",
       "stance": "主張地方建設需以交通可達性與產業需求排序",
       "topicHints": ["budget", "transport"]
+    },
+    {
+      "id": "su-transit-north",
+      "name": "蘇庭恩",
+      "role": "交通委員",
+      "area": "北部",
+      "focus": "交通、公車",
+      "stance": "主張公車班距與轉乘補助應以通勤資料校正",
+      "topicHints": ["transport", "budget"]
+    },
+    {
+      "id": "lin-budget-north",
+      "name": "林宥辰",
+      "role": "財政議員",
+      "area": "北部",
+      "focus": "財經、補助",
+      "stance": "關注都市更新、社福補助與預算透明度",
+      "topicHints": ["budget", "housing"]
+    },
+    {
+      "id": "yen-energy-north",
+      "name": "顏詠寧",
+      "role": "能源委員",
+      "area": "北部",
+      "focus": "能源、電網",
+      "stance": "主張都會區用電尖峰與備援規劃需公開追蹤",
+      "topicHints": ["energy", "budget"]
+    },
+    {
+      "id": "cheng-labor-north",
+      "name": "鄭子涵",
+      "role": "勞工議員",
+      "area": "北部",
+      "focus": "勞工、工時",
+      "stance": "要求服務業工時稽查與申訴資料定期公布",
+      "topicHints": ["labor", "budget"]
+    },
+    {
+      "id": "ma-education-central",
+      "name": "馬語彤",
+      "role": "教育議員",
+      "area": "中部",
+      "focus": "教育、技職",
+      "stance": "主張技職設備補助需追蹤學生實習與就業銜接",
+      "topicHints": ["education", "labor"]
+    },
+    {
+      "id": "hsiao-budget-central",
+      "name": "蕭品睿",
+      "role": "財政委員",
+      "area": "中部",
+      "focus": "財經、產業",
+      "stance": "關注產業補助、地方招商與公共建設效益",
+      "topicHints": ["budget", "transport"]
+    },
+    {
+      "id": "zeng-transport-central",
+      "name": "曾郁廷",
+      "role": "交通議員",
+      "area": "中部",
+      "focus": "交通、道路",
+      "stance": "主張道路工程與事故熱點資料需同步公開",
+      "topicHints": ["transport", "budget"]
+    },
+    {
+      "id": "lin-housing-central",
+      "name": "林映妤",
+      "role": "住宅議員",
+      "area": "中部",
+      "focus": "居住、都更",
+      "stance": "關注老舊社區更新與租屋市場資訊落差",
+      "topicHints": ["housing", "budget"]
+    },
+    {
+      "id": "guo-labor-south",
+      "name": "郭冠宇",
+      "role": "勞政議員",
+      "area": "南部",
+      "focus": "勞工、職安",
+      "stance": "要求工安事故、勞檢頻率與改善進度集中追蹤",
+      "topicHints": ["labor", "budget"]
+    },
+    {
+      "id": "huang-energy-south",
+      "name": "黃采潔",
+      "role": "能源議員",
+      "area": "南部",
+      "focus": "能源、供電",
+      "stance": "主張工業區供電韌性與再生能源併網需分區檢討",
+      "topicHints": ["energy", "budget"]
+    },
+    {
+      "id": "ho-transport-south",
+      "name": "何承恩",
+      "role": "交通委員",
+      "area": "南部",
+      "focus": "交通、公車",
+      "stance": "關注偏鄉公車、長照交通與票價補助銜接",
+      "topicHints": ["transport", "budget"]
+    },
+    {
+      "id": "chiu-education-south",
+      "name": "邱若妤",
+      "role": "教育委員",
+      "area": "南部",
+      "focus": "教育、技職",
+      "stance": "主張校園設備採購與維護經費需逐校揭露",
+      "topicHints": ["education", "budget"]
+    },
+    {
+      "id": "lee-budget-east",
+      "name": "李昀哲",
+      "role": "財政委員",
+      "area": "東部",
+      "focus": "財經、地方建設",
+      "stance": "關注地方建設預算與公共服務可近性",
+      "topicHints": ["budget", "transport"]
+    },
+    {
+      "id": "tseng-housing-east",
+      "name": "曾品蓁",
+      "role": "住宅議員",
+      "area": "東部",
+      "focus": "居住、社宅",
+      "stance": "主張社宅、醫療與交通服務應整體評估",
+      "topicHints": ["housing", "transport"]
+    },
+    {
+      "id": "wu-transport-east",
+      "name": "吳柏翰",
+      "role": "交通委員",
+      "area": "東部",
+      "focus": "交通、公路",
+      "stance": "主張公路安全、災後復原與替代運輸需有公開指標",
+      "topicHints": ["transport", "budget"]
+    },
+    {
+      "id": "yao-energy-east",
+      "name": "姚庭瑄",
+      "role": "能源委員",
+      "area": "東部",
+      "focus": "能源、災害備援",
+      "stance": "關注偏遠供電、儲能備援與災害通訊韌性",
+      "topicHints": ["energy", "budget"]
     }
   ],
   "stopwords": [

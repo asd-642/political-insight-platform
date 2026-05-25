@@ -47,26 +47,90 @@ const seedContent = {
     {
       id: "gazette",
       title: "政府公報",
-      description: "法規預告、公告、行政命令與政策原始文件。",
+      description:
+        "收錄中央與地方機關發布的法規預告、公告、行政命令、施政計畫與政策原始文件，是本站判讀政策是否正式啟動的第一層依據。",
       reliability: "原始資料",
+      scope: "行政院、各部會、縣市政府、公所、主管機關網站與公報系統。",
+      use: "確認政策名稱、發布日期、主管單位、適用對象與正式文字。",
+      update: "每日整理，遇到重大公告或爭議政策時優先補查。",
+      checks: ["是否有正式文號", "是否為主管機關發布", "是否仍在預告期或已正式生效"],
     },
     {
       id: "legislature",
       title: "議事紀錄",
-      description: "院會、委員會、質詢、表決與提案紀錄。",
+      description:
+        "整理院會、委員會、地方議會、質詢紀錄、提案文字與表決結果，用來追蹤政治人物在議題中的立場變化與制度推進進度。",
       reliability: "原始資料",
+      scope: "立法院、地方議會、會議逐字稿、議案系統、質詢影片與議事日程。",
+      use: "比對誰提出主張、誰支持或反對、案件目前卡在哪個程序。",
+      update: "議會開議期間提高更新頻率，閉會期間以重大提案為主。",
+      checks: ["是否有完整會議紀錄", "是否能對應到提案或預算案", "發言是否被新聞或剪輯斷章取義"],
     },
     {
       id: "election",
       title: "選舉公報",
-      description: "候選人經歷、政見與選務機關公告。",
+      description:
+        "保存候選人政見、經歷、選區資料與選務機關公告，協助比對選前承諾與選後政策行動是否一致。",
       reliability: "原始資料",
+      scope: "中央選舉委員會、地方選委會、選舉公報、候選人登記資料。",
+      use: "建立人物資料基礎，追蹤政見承諾、選區關聯與後續問政。",
+      update: "選舉期間密集整理，平時作為人物資料與政策承諾的比對底稿。",
+      checks: ["政見是否為正式公報文字", "人物與選區是否一致", "承諾是否已有後續政策行動"],
+    },
+    {
+      id: "budget",
+      title: "預算與決算文件",
+      description:
+        "包含年度預算書、追加減預算、決算報告、審議資料與補助計畫，用來判斷政策是否有實際經費支撐。",
+      reliability: "財務資料",
+      scope: "中央與地方總預算、特別預算、基金預算、決算書、補助明細。",
+      use: "查核政策金額、預算來源、執行率、凍結案與經費流向。",
+      update: "預算審查季與決算公布期優先整理。",
+      checks: ["金額是否為編列數或決算數", "是否含跨年度經費", "是否有凍結或附帶決議"],
+    },
+    {
+      id: "statistics",
+      title: "統計資料與公開數據",
+      description:
+        "整理政府統計、公開資料平台、專題調查與民生指標，補足政策討論中常被忽略的趨勢背景。",
+      reliability: "數據資料",
+      scope: "data.gov.tw、主計總處、部會統計、地方政府開放資料、公共服務指標。",
+      use: "檢查政策問題是否存在、影響規模多大、不同地區或族群是否差異明顯。",
+      update: "依資料發布週期更新，重大議題會補充歷史序列。",
+      checks: ["資料年份是否最新", "指標定義是否改版", "樣本或統計口徑是否一致"],
+    },
+    {
+      id: "audit",
+      title: "審計、判決與監察資料",
+      description:
+        "用審計報告、法院判決、監察院調查與裁罰公告補強爭議事件，避免只看單方說法。",
+      reliability: "查核資料",
+      scope: "審計部、司法院裁判書、監察院、主管機關裁罰公告與廉政資料。",
+      use: "確認是否已有違規、疏失、裁罰、糾正或判決結果。",
+      update: "遇到弊案、採購、工程、補助與重大事故時優先查核。",
+      checks: ["案件是否定讞", "裁罰是否仍可申訴", "調查結論是否有明確責任歸屬"],
+    },
+    {
+      id: "briefings",
+      title: "官方簡報與新聞稿",
+      description:
+        "收錄主管機關記者會、政策簡報、新聞稿與問答資料，作為理解政府主張與政策包裝方式的輔助來源。",
+      reliability: "官方說明",
+      scope: "部會新聞稿、地方政府新聞稿、政策簡報、記者會逐字與問答。",
+      use: "整理政府說法、預期成效、對外承諾與尚未完整公開的執行方向。",
+      update: "重大政策發布日即時補入，後續以正式文件校正。",
+      checks: ["是否只是宣傳說法", "是否已有正式文件支撐", "承諾日期是否明確"],
     },
     {
       id: "news",
       title: "新聞報導",
-      description: "用於補足事件脈絡，需交叉比對不同媒體。",
+      description:
+        "新聞報導主要用來補足事件時間線、當事人反應與公共討論脈絡；本站會盡量回到原始文件確認，不把單篇報導直接當作結論。",
       reliability: "交叉查核",
+      scope: "多家新聞媒體、專題報導、地方新聞、採訪稿與公開訪談。",
+      use: "追蹤事件進展、整理各方說法、找出需要回查的官方文件。",
+      update: "每日篩選，政治爭議與民生議題會比對不同媒體版本。",
+      checks: ["是否只有單一媒體報導", "是否有引用原始文件", "是否混入評論或未證實消息"],
     },
   ],
   articles: [
@@ -1092,7 +1156,28 @@ function renderSources() {
     card.innerHTML = `
       <p class="eyebrow">${escapeHtml(source.reliability)}</p>
       <h3>${escapeHtml(source.title)}</h3>
-      <p>${escapeHtml(source.description)}</p>
+      <p class="source-description">${escapeHtml(source.description)}</p>
+      <dl class="source-grid">
+        <div>
+          <dt>涵蓋範圍</dt>
+          <dd>${escapeHtml(source.scope || "依議題補充來源範圍。")}</dd>
+        </div>
+        <div>
+          <dt>使用方式</dt>
+          <dd>${escapeHtml(source.use || "作為文章查核與脈絡整理依據。")}</dd>
+        </div>
+        <div>
+          <dt>更新節奏</dt>
+          <dd>${escapeHtml(source.update || "依資料發布與議題熱度更新。")}</dd>
+        </div>
+      </dl>
+      ${
+        Array.isArray(source.checks) && source.checks.length
+          ? `<ul class="source-checklist">${source.checks
+              .map((item) => `<li>${escapeHtml(item)}</li>`)
+              .join("")}</ul>`
+          : ""
+      }
     `;
     container.append(card);
   });

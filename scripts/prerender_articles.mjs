@@ -328,7 +328,7 @@ function renderPage(article, content) {
     <script id="articleStructuredData" type="application/ld+json">${safeJson(schema)}<\/script>
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20260520-7" />
+    <link rel="stylesheet" href="styles.css?v=20260525-2" />
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4133542156062168"
       crossorigin="anonymous"><\/script>
   </head>
@@ -371,16 +371,16 @@ function renderPage(article, content) {
     </footer>
 
     <script src="utils.js?v=20260524-1"></script>
-    <script src="firebase-config.js"></script>
+    <script src="firebase-config.js?v=20260525-2"></script>
     <script src="firebase-bootstrap.js?v=20260520-2"></script>
     <script src="site-seo.js?v=20260520-2"></script>
-    <script src="auth-theme.js?v=20260520-1"></script>
+    <script src="auth-theme.js?v=20260525-2"></script>
     <script src="ad-safety.js?v=20260520-2"></script>
     <script src="watchlist.js?v=20260520-4"></script>
     <script src="visuals.js?v=20260520-2"></script>
     <script src="content/generated-content.js"></script>
-    <script src="app.js?v=20260520-6"></script>
-    <script src="article.js?v=20260520-7"></script>
+    <script src="app.js?v=20260525-4"></script>
+    <script src="article.js?v=20260525-1"></script>
   </body>
 </html>
 `;
