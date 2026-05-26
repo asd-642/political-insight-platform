@@ -42,7 +42,7 @@
   function articleUrl(id) {
     return window.PolicyPulseUtils?.articleUrl
       ? window.PolicyPulseUtils.articleUrl(id)
-      : `articles/${encodeURIComponent(id)}.html`;
+      : `/article.html?id=${encodeURIComponent(id)}`;
   }
 
   function findGeneratedArticles() {

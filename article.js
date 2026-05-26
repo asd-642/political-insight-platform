@@ -12,14 +12,21 @@ function articleEscape(value) {
 function getArticleId() {
   const queryId = new URLSearchParams(location.search).get("id");
   if (queryId) return queryId;
-  const match = decodeURIComponent(location.pathname).match(/\/articles\/([^/]+)\.html$/);
-  return match?.[1] || "";
+  const path = decodeURIComponent(location.pathname);
+  if (!path.includes("/articles/")) return "";
+  const fileName = path.split("/").filter(Boolean).pop() || "";
+  return fileName.replace(/\.html$/i, "");
 }
 
 function articlePageUrl(id) {
   return window.PolicyPulseUtils?.articleUrl
     ? window.PolicyPulseUtils.articleUrl(id)
-    : `articles/${encodeURIComponent(id)}.html`;
+    : (() => {
+      const encodedId = encodeURIComponent(id);
+      const host = window.location?.hostname || "";
+      const isLocal = host === "localhost" || host === "127.0.0.1" || host === "";
+      return isLocal ? `/article.html?id=${encodedId}` : `/articles/${encodedId}`;
+    })();
 }
 
 function currentContent() {

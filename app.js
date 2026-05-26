@@ -4,43 +4,43 @@ const seedContent = {
       id: "all",
       name: "全部",
       description: "所有已整理條目",
-      image: "assets/podium.png",
+      image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80",
     },
     {
       id: "budget",
       name: "財經",
       description: "預算、稅制、補助、產業與物價",
-      image: "assets/hero-market.png",
+      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=80",
     },
     {
       id: "housing",
       name: "居住",
       description: "租屋、社宅、房價與都市更新",
-      image: "assets/housing.png",
+      image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=900&q=80",
     },
     {
       id: "energy",
       name: "能源",
       description: "電價、電網、再生能源與供電安全",
-      image: "assets/energy.png",
+      image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=900&q=80",
     },
     {
       id: "transport",
       name: "交通",
       description: "大眾運輸、通勤補助與道路安全",
-      image: "assets/transport.png",
+      image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=900&q=80",
     },
     {
       id: "labor",
       name: "勞工",
       description: "薪資、工時、職安與社會保險",
-      image: "assets/labor.png",
+      image: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=80",
     },
     {
       id: "education",
       name: "教育",
       description: "學費、課綱、技職與高教資源",
-      image: "assets/education.png",
+      image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80",
     },
   ],
   sources: [
@@ -344,10 +344,12 @@ const state = {
   timelineTopicId: null,
   topicOpen: false,
   articlePage: 1,
+  peoplePage: 1,
 };
 
 const $ = (selector) => document.querySelector(selector);
 const ARTICLES_PER_PAGE = 12;
+const PEOPLE_PER_PAGE = 8;
 const FIREBASE_INITIAL_WAIT_MS = 900;
 const FIREBASE_BACKGROUND_WAIT_MS = 10000;
 let firebaseContentSyncStarted = false;
@@ -365,7 +367,12 @@ const topicName = (id) =>
 const topicImage = (id) =>
   state.content.topics.find((topic) => topic.id === id)?.image || "assets/podium.png";
 
-const articleUrl = window.PolicyPulseUtils?.articleUrl || ((id) => `articles/${encodeURIComponent(id)}.html`);
+const articleUrl = window.PolicyPulseUtils?.articleUrl || ((id) => {
+  const encodedId = encodeURIComponent(id);
+  const host = window.location?.hostname || "";
+  const isLocal = host === "localhost" || host === "127.0.0.1" || host === "";
+  return isLocal ? `/article.html?id=${encodedId}` : `/articles/${encodedId}`;
+});
 
 const articleImage = (article) =>
   window.PolicyPulseVisuals?.articleImage?.(article, topicName(article.topic)) ||
@@ -382,12 +389,12 @@ const defaultTopicNames = {
 };
 
 const defaultTopicImages = {
-  budget: "assets/hero-market.png",
-  housing: "assets/housing.png",
-  energy: "assets/energy.png",
-  transport: "assets/transport.png",
-  labor: "assets/labor.png",
-  education: "assets/education.png",
+  budget: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=80",
+  housing: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=900&q=80",
+  energy: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=900&q=80",
+  transport: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=900&q=80",
+  labor: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=80",
+  education: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80",
 };
 
 const matchText = (values) =>
@@ -431,6 +438,10 @@ function readWatchlistIds() {
 
 function resetArticlePage() {
   state.articlePage = 1;
+}
+
+function resetPeoplePage() {
+  state.peoplePage = 1;
 }
 
 function mergeByKey(baseItems = [], extraItems = [], keyForItem = (item) => item.id) {
@@ -604,6 +615,7 @@ async function syncFirebaseContentInBackground() {
     if (hasNewContent) {
       state.selectedArticle = state.content.articles[0]?.id || state.selectedArticle;
       resetArticlePage();
+      resetPeoplePage();
       render();
     }
   } catch {
@@ -635,6 +647,7 @@ function renderTopicFilters() {
     button.addEventListener("click", () => {
       state.topic = topic.id;
       resetArticlePage();
+      resetPeoplePage();
       const first = filteredArticles()[0];
       if (first) state.selectedArticle = first.id;
       render();
@@ -725,12 +738,36 @@ function renderWatchList() {
     .join("");
 }
 
+function renderSearchSummary(totalItems) {
+  const summary = $("#searchSummary");
+  if (!summary) return;
+
+  const query = state.query.trim();
+  if (!query) {
+    summary.hidden = true;
+    summary.innerHTML = "";
+    return;
+  }
+
+  const topicLabel = state.topic === "all" ? "全部議題" : topicName(state.topic);
+  summary.hidden = false;
+  summary.innerHTML = `
+    <div>
+      <p class="eyebrow">Search Results</p>
+      <h2>「${escapeHtml(query)}」搜尋結果</h2>
+      <p>目前在 ${escapeHtml(topicLabel)} 中找到 ${totalItems} 篇相關文章。你可以先點一次標題預覽，第二次再進入完整文章。</p>
+    </div>
+    <span class="search-count">${totalItems} 篇</span>
+  `;
+}
+
 function renderArticles() {
   const container = $("#articleGrid");
   const pagination = $("#articlePagination");
   const list = filteredArticles();
   container.innerHTML = "";
   $("#activeTopicLabel").textContent = topicName(state.topic);
+  renderSearchSummary(list.length);
 
   if (!list.length) {
     container.append(el("div", "empty-state", "目前沒有符合條件的條目。"));
@@ -895,6 +932,7 @@ function relatedArticlesForPerson(person) {
 
 function renderPeople() {
   const container = $("#peopleList");
+  const pagination = $("#peoplePagination");
   const list = state.content.people.filter((person) => {
     if (!state.query) return true;
     return matchText([person.name, person.role, person.area, person.focus, person.stance]);
@@ -903,10 +941,16 @@ function renderPeople() {
 
   if (!list.length) {
     container.append(el("div", "empty-state", "目前沒有符合條件的人物。"));
+    if (pagination) pagination.innerHTML = "";
     return;
   }
 
-  list.forEach((person) => {
+  const totalPages = Math.max(1, Math.ceil(list.length / PEOPLE_PER_PAGE));
+  state.peoplePage = Math.min(Math.max(1, state.peoplePage), totalPages);
+  const pageStart = (state.peoplePage - 1) * PEOPLE_PER_PAGE;
+  const pageItems = list.slice(pageStart, pageStart + PEOPLE_PER_PAGE);
+
+  pageItems.forEach((person) => {
     const relatedArticles = relatedArticlesForPerson(person);
     const button = el("button", "person-card", "");
     button.type = "button";
@@ -928,6 +972,61 @@ function renderPeople() {
     });
     button.addEventListener("dblclick", () => showPersonTimeline(person.id));
     container.append(button);
+  });
+
+  renderPeoplePagination(list.length, totalPages);
+}
+
+function renderPeoplePagination(totalItems, totalPages) {
+  const pagination = $("#peoplePagination");
+  if (!pagination) return;
+
+  if (totalPages <= 1) {
+    pagination.innerHTML = "";
+    return;
+  }
+
+  const pageNumbers = Array.from({ length: totalPages })
+    .map((_, index) => index + 1)
+    .filter((page) => page === 1 || page === totalPages || Math.abs(page - state.peoplePage) <= 1);
+
+  const items = [];
+  pageNumbers.forEach((page, index) => {
+    if (index && page - pageNumbers[index - 1] > 1) {
+      items.push(`<span class="pagination-gap" aria-hidden="true">...</span>`);
+    }
+    items.push(`
+      <button class="pagination-page ${page === state.peoplePage ? "is-active" : ""}" data-people-page="${page}" type="button" ${page === state.peoplePage ? 'aria-current="page"' : ""}>
+        ${page}
+      </button>
+    `);
+  });
+
+  const pageStart = (state.peoplePage - 1) * PEOPLE_PER_PAGE + 1;
+  const pageEnd = Math.min(totalItems, state.peoplePage * PEOPLE_PER_PAGE);
+  pagination.innerHTML = `
+    <div class="pagination-summary">
+      第 ${state.peoplePage} / ${totalPages} 頁・顯示 ${pageStart}-${pageEnd} 位，共 ${totalItems} 位
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-button" data-people-page="${state.peoplePage - 1}" type="button" ${state.peoplePage === 1 ? "disabled" : ""}>
+        上一頁
+      </button>
+      ${items.join("")}
+      <button class="pagination-button" data-people-page="${state.peoplePage + 1}" type="button" ${state.peoplePage === totalPages ? "disabled" : ""}>
+        下一頁
+      </button>
+    </div>
+  `;
+
+  pagination.querySelectorAll("[data-people-page]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const page = Number(button.dataset.peoplePage);
+      if (!Number.isFinite(page) || page < 1 || page > totalPages || page === state.peoplePage) return;
+      state.peoplePage = page;
+      renderPeople();
+      $("#peopleList")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   });
 }
 
@@ -1309,6 +1408,7 @@ function bindEvents() {
     event.currentTarget.setCustomValidity("");
     state.query = event.target.value;
     resetArticlePage();
+    resetPeoplePage();
     if (state.query.trim().length >= 2) {
       window.PolicyPulseStats?.record("search", { query: state.query.trim() });
     }
@@ -1349,6 +1449,8 @@ async function init() {
   const initialSearch = new URLSearchParams(location.search).get("search");
   if (initialSearch) {
     state.query = initialSearch;
+    resetArticlePage();
+    resetPeoplePage();
     const searchInput = $("#siteSearch");
     if (searchInput) searchInput.value = initialSearch;
     const first = filteredArticles()[0];

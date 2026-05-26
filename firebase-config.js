@@ -19,7 +19,7 @@ window.PolicyPulseFirebaseConfig = {
 
   window.addEventListener("load", () => {
     const script = document.createElement("script");
-    script.src = "admin-daily-backfill.js?v=20260524-1";
+    script.src = "admin-daily-backfill.js?v=20260526-2";
     document.body.appendChild(script);
   });
 })();

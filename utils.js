@@ -31,7 +31,12 @@
     return `${byType.year}-${byType.month}-${byType.day}`;
   };
 
-  const articleUrl = (id) => `articles/${encodeURIComponent(id)}.html`;
+  const articleUrl = (id) => {
+    const encodedId = encodeURIComponent(id);
+    const host = window.location?.hostname || "";
+    const isLocal = host === "localhost" || host === "127.0.0.1" || host === "";
+    return isLocal ? `/article.html?id=${encodedId}` : `/articles/${encodedId}`;
+  };
 
   const unique = (items = []) => [
     ...new Set(items.map((item) => String(item || "").trim()).filter(Boolean)),

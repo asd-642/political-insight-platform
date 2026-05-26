@@ -291,7 +291,7 @@ function themeBootScript() {
 function renderPage(article, content) {
   const topic = topicName(content.topics, article.topic);
   const image = articleImage(article, content.topics);
-  const url = `articles/${encodeURIComponent(article.id)}.html`;
+  const url = `/articles/${encodeURIComponent(article.id)}`;
   const schema = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -395,9 +395,6 @@ async function clearOldPages() {
 async function main() {
   const content = await loadContent();
   await clearOldPages();
-  await Promise.all(content.articles.map((article) =>
-    writeFile(path.join(articleDir, `${article.id}.html`), renderPage(article, content), "utf8"),
-  ));
   await writeFile(
     path.join(root, "content", "prerendered-articles.json"),
     `${JSON.stringify({ articles: content.articles.map((article) => ({
@@ -408,11 +405,11 @@ async function main() {
       summary: article.summary || "",
       status: article.status || "",
       updated: article.updated || "",
-      path: `articles/${encodeURIComponent(article.id)}.html`,
+      path: `/articles/${encodeURIComponent(article.id)}`,
     })) }, null, 2)}\n`,
     "utf8",
   );
-  console.log(`已產生 ${content.articles.length} 個靜態文章頁。`);
+  console.log(`Prepared ${content.articles.length} dynamic article routes.`);
 }
 
 main().catch((error) => {

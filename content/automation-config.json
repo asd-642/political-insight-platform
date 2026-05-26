@@ -1,7 +1,7 @@
 {
   "model": "gpt-5.4-mini",
-  "maxDrafts": 3,
-  "maxDraftsPerTopic": 1,
+  "maxDrafts": 15,
+  "maxDraftsPerTopic": 4,
   "minKeywordScore": 2,
   "dailyRandomDrafts": {
     "enabled": true,

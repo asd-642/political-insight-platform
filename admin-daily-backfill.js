@@ -1,5 +1,6 @@
 (function setupDailyDraftBackfill() {
-  if (typeof dailyDraftState !== "undefined" && "autoBackfillChecked" in dailyDraftState) return;
+  if (window.__policyPulseDailyBackfillLoaded) return;
+  window.__policyPulseDailyBackfillLoaded = true;
 
   const state = {
     checked: false,

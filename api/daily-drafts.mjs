@@ -91,6 +91,25 @@ async function dailyStatus() {
   };
 }
 
+function publicDailyStatus(status) {
+  const latest = status.latest
+    ? {
+        date: status.latest.date || null,
+        finishedAt: status.latest.finishedAt || null,
+        createdCount: status.latest.createdCount ?? status.latest.created?.length ?? 0,
+        skippedCount: status.latest.skippedCount ?? status.latest.skipped?.length ?? 0,
+        hasError: Boolean(status.latest.error),
+      }
+    : null;
+
+  return {
+    ok: true,
+    public: true,
+    schedule: status.schedule,
+    latest,
+  };
+}
+
 export default async function handler(request, response) {
   if (request.method === "OPTIONS") {
     sendJson(response, 204, {});
@@ -102,17 +121,21 @@ export default async function handler(request, response) {
     return;
   }
 
-  if (!(await isAuthorized(request))) {
+  const url = new URL(request.url || "/api/daily-drafts", "https://policypulse.tw");
+  const wantsStatus = url.searchParams.get("status") === "1";
+  const authorized = await isAuthorized(request);
+
+  if (wantsStatus) {
+    const status = await dailyStatus();
+    sendJson(response, 200, authorized ? status : publicDailyStatus(status));
+    return;
+  }
+
+  if (!authorized) {
     sendJson(response, 401, {
       ok: false,
       error: "Unauthorized. Vercel Cron must use CRON_SECRET, and manual runs must be started by an admin account.",
     });
-    return;
-  }
-
-  const url = new URL(request.url || "/api/daily-drafts", "https://policypulse.tw");
-  if (url.searchParams.get("status") === "1") {
-    sendJson(response, 200, await dailyStatus());
     return;
   }
 
