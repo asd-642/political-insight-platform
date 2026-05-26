@@ -11,10 +11,18 @@ function parseServiceAccount() {
     throw new Error("Missing FIREBASE_SERVICE_ACCOUNT on Vercel.");
   }
 
-  const text = raw.trim().startsWith("{")
-    ? raw.trim()
-    : Buffer.from(raw.trim(), "base64").toString("utf8");
-  const account = JSON.parse(text);
+  const trimmed = raw.trim();
+  const text = trimmed.startsWith("{")
+    ? trimmed
+    : Buffer.from(trimmed, "base64").toString("utf8");
+
+  let account;
+  try {
+    account = JSON.parse(text);
+  } catch {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT format is invalid. Paste the full service account JSON or a base64 encoded JSON value.");
+  }
+
   if (!account.client_email || !account.private_key) {
     throw new Error("FIREBASE_SERVICE_ACCOUNT must include client_email and private_key.");
   }
@@ -41,10 +49,15 @@ async function getAccessToken() {
     exp: now + 3600,
   }));
   const unsigned = `${header}.${payload}`;
-  const signature = crypto
-    .createSign("RSA-SHA256")
-    .update(unsigned)
-    .sign(account.private_key, "base64url");
+  let signature;
+  try {
+    signature = crypto
+      .createSign("RSA-SHA256")
+      .update(unsigned)
+      .sign(account.private_key, "base64url");
+  } catch {
+    throw new Error("Firebase service account private_key is invalid. Recopy the key from Firebase service account JSON.");
+  }
   const assertion = `${unsigned}.${signature}`;
 
   const response = await fetch("https://oauth2.googleapis.com/token", {
