@@ -1,4 +1,4 @@
-import { getDocument } from "./_lib/firestore-rest.mjs";
+import { getDocument, setDocument } from "./_lib/firestore-rest.mjs";
 import { runDailyDrafts } from "./_lib/policy-drafts.mjs";
 
 const firebaseWebApiKey = process.env.FIREBASE_WEB_API_KEY || "AIzaSyA6ZmZnNMylKj2Uy9tS_d933fYHHFWkmS8";
@@ -69,11 +69,61 @@ async function isAuthorized(request) {
   }
 }
 
+function taipeiDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+function friendlyServiceError(error) {
+  const message = error?.message || "Daily draft service failed.";
+  if (message.includes("Missing FIREBASE_SERVICE_ACCOUNT")) {
+    return "Vercel 缺少 FIREBASE_SERVICE_ACCOUNT，產稿服務無法寫入 Firebase。";
+  }
+  if (message.includes("FIREBASE_SERVICE_ACCOUNT format is invalid")) {
+    return "Vercel 的 FIREBASE_SERVICE_ACCOUNT 格式不正確，請重新貼上完整 JSON 或 base64 JSON。";
+  }
+  if (message.includes("private_key is invalid")) {
+    return "Firebase 服務帳號 private_key 格式不正確，請重新複製服務帳號 JSON。";
+  }
+  if (message.includes("PERMISSION_DENIED") || message.includes("permission")) {
+    return "Firebase 服務帳號沒有足夠權限，請確認它可讀寫 Firestore。";
+  }
+  return message;
+}
+
+async function writeFailureReport(error) {
+  const now = new Date().toISOString();
+  const report = {
+    date: taipeiDate(),
+    requested: 0,
+    created: [],
+    skipped: [],
+    createdCount: 0,
+    skippedCount: 0,
+    startedAt: now,
+    finishedAt: now,
+    error: friendlyServiceError(error),
+  };
+
+  try {
+    await setDocument("automationRuns", "daily-drafts-latest", report);
+    await setDocument("automationRuns", `daily-drafts-${report.date}`, report);
+  } catch {
+    // If Firebase itself is unavailable, the API response still carries the error.
+  }
+
+  return report;
+}
+
 async function dailyStatus() {
   const latest = await getDocument("automationRuns", "daily-drafts-latest")
     .then((doc) => doc.data || null)
     .catch((error) => ({
-      error: error.message || "無法讀取上次執行紀錄。",
+      error: friendlyServiceError(error),
     }));
 
   return {
@@ -148,9 +198,11 @@ export default async function handler(request, response) {
       skippedCount: result.skipped.length,
     });
   } catch (error) {
+    const report = await writeFailureReport(error);
     sendJson(response, 500, {
       ok: false,
-      error: error.message || "Daily draft generation failed.",
+      ...report,
+      error: report.error,
     });
   }
 }
