@@ -6,7 +6,7 @@ const tokenCache = {
 };
 
 function stripEnvAssignment(value) {
-  return String(value || "").replace(/^\s*(FIREBASE_SERVICE_ACCOUNT|GOOGLE_SERVICE_ACCOUNT_JSON)\s*=\s*/i, "");
+  return String(value || "").replace(/^\s*(FIREBASE_SERVICE_ACCOUNT|FIREBASE_SERVICE_ACCOUNT_BASE64|GOOGLE_SERVICE_ACCOUNT_JSON)\s*=\s*/i, "");
 }
 
 function stripWrappingQuotes(value) {
@@ -48,7 +48,7 @@ function serviceAccountCandidates(raw) {
 }
 
 function parseServiceAccount() {
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GOOGLE_SERVICE_ACCOUNT_JSON || "";
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 || process.env.GOOGLE_SERVICE_ACCOUNT_JSON || "";
   if (!raw.trim()) {
     throw new Error("Missing FIREBASE_SERVICE_ACCOUNT on Vercel.");
   }
