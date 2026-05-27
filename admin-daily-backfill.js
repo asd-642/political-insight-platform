@@ -26,6 +26,43 @@
     education: ["教育", "校園"],
   };
 
+  function normalizeFactForAdmin(fact, index) {
+    if (Array.isArray(fact)) return [fact[0] || `重點 ${index + 1}`, fact[1] || ""];
+    if (fact && typeof fact === "object") {
+      return [
+        fact.label || fact.name || `重點 ${index + 1}`,
+        fact.value || fact.text || fact.description || "",
+      ];
+    }
+    return [`重點 ${index + 1}`, fact || ""];
+  }
+
+  function normalizeDraftForAdmin(draft) {
+    if (!draft || typeof draft !== "object") return draft;
+    return {
+      ...draft,
+      facts: Array.isArray(draft.facts) ? draft.facts.map(normalizeFactForAdmin) : [],
+    };
+  }
+
+  async function patchDraftListForAdmin() {
+    const api = await window.PolicyPulseFirebaseReady;
+    if (!api?.listDrafts || api.__policyPulseDraftFactPatch) return;
+    const originalListDrafts = api.listDrafts.bind(api);
+    api.listDrafts = async (...args) => {
+      const drafts = await originalListDrafts(...args);
+      return Array.isArray(drafts) ? drafts.map(normalizeDraftForAdmin) : drafts;
+    };
+    api.__policyPulseDraftFactPatch = true;
+
+    window.setTimeout(() => {
+      const queueText = document.querySelector("#draftReviewQueue")?.textContent || "";
+      if (queueText.includes("[object Object]") && typeof loadDrafts === "function") {
+        loadDrafts();
+      }
+    }, 800);
+  }
+
   function taipeiDate(date = new Date()) {
     if (window.PolicyPulseUtils?.taipeiDate) return window.PolicyPulseUtils.taipeiDate(date);
     const parts = new Intl.DateTimeFormat("en-CA", {
@@ -246,6 +283,7 @@
 
   document.addEventListener("policy-auth-change", scheduleBackfillCheck);
   document.addEventListener("DOMContentLoaded", scheduleBackfillCheck);
+  patchDraftListForAdmin().catch(() => {});
   document.addEventListener("click", (event) => {
     if (!event.target.closest?.("#runDailyDraftsNow")) return;
     if (state.manualBackfill) return;
