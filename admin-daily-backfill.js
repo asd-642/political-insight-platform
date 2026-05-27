@@ -5,6 +5,16 @@
   const state = {
     checked: false,
     manualBackfill: false,
+    firestoreModule: null,
+  };
+
+  const topicNames = {
+    budget: "財經",
+    housing: "居住",
+    energy: "能源",
+    transport: "交通",
+    labor: "勞工",
+    education: "教育",
   };
 
   const fallbackKeywords = {
@@ -28,6 +38,14 @@
     return `${byType.year}-${byType.month}-${byType.day}`;
   }
 
+  function safeDraftId(topic, keyword, date) {
+    const cleanKeyword = String(keyword || "keyword")
+      .replace(/[\\/#?[\]]+/g, "-")
+      .replace(/\s+/g, "-")
+      .slice(0, 42);
+    return `${topic}-${cleanKeyword}-${date}`;
+  }
+
   function hasTodayRun() {
     return dailyDraftState?.status?.latest?.date === taipeiDate();
   }
@@ -46,32 +64,92 @@
     return Array.isArray(draftState?.items) && draftState.items.some((item) => draftDate(item) === today);
   }
 
+  async function loadFirestoreModule() {
+    if (!state.firestoreModule) {
+      state.firestoreModule = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js");
+    }
+    return state.firestoreModule;
+  }
+
+  function buildBackfillDraft({ topic, keyword, date, now }) {
+    const topicName = topicNames[topic] || topic;
+    return {
+      id: safeDraftId(topic, keyword, date),
+      topic,
+      topicName,
+      title: `${keyword}議題整理，後續影響與資料待查核`,
+      status: "待審核",
+      summary: `根據關鍵字「${keyword}」建立待審草稿，先整理影響對象、主要爭點與後續需要補充的資料。`,
+      image: "",
+      imageMode: "generated",
+      imagePrompt: `${topicName} policy newsroom cover about ${keyword}`,
+      caption: `${topicName}議題示意圖。`,
+      updated: date,
+      tags: [keyword, topicName, "待查核"],
+      sources: ["後台補救草稿"],
+      sourceLinks: [],
+      reviewChecklist: [
+        "確認至少 2 個可查來源",
+        "補足事件背景、支持方、疑慮方與後續追蹤",
+        "檢查是否有未查證指控或過度判斷",
+      ],
+      facts: [
+        { label: "影響對象", value: "待依來源確認" },
+        { label: "核心爭點", value: `${keyword}相關政策影響與各方主張` },
+        { label: "觀察指標", value: "正式公告、預算、執行進度、地方回應" },
+      ],
+      support: `支持方可能認為，處理「${keyword}」有助於改善公共服務或補足制度缺口。`,
+      concern: `疑慮方可能關注「${keyword}」背後的程序透明、成本負擔、地方執行能力或資訊不足。`,
+      next: "補上原始公告、第二來源、時間線與相關人員說法後，再決定是否發布。",
+      sections: [
+        {
+          heading: "事件背景",
+          paragraphs: `這篇草稿聚焦「${keyword}」相關政策與公共議題，先建立可審核的文章骨架。`,
+        },
+        {
+          heading: "目前可整理的重點",
+          paragraphs: `「${keyword}」需要確認正式公告、政策主張、預算期程與責任單位。`,
+        },
+        {
+          heading: "後續追蹤方向",
+          paragraphs: "後續可以追蹤正式公告、議會質詢、主管機關新聞稿、預算書與地方政府回應。",
+        },
+      ],
+      published: false,
+      createdAtIso: now,
+    };
+  }
+
   async function createClientBackfillDrafts() {
     const api = await window.PolicyPulseFirebaseReady;
     const canCreate = api?.enabled
+      && api?.db
       && api?.getCurrentUser?.()
-      && api?.isAdmin?.()
-      && typeof api.createKeywordDrafts === "function";
+      && api?.isAdmin?.();
     if (!canCreate) {
       throw new Error("目前的登入狀態無法用瀏覽器端補建草稿，請重新登入管理員帳號後再按一次。");
     }
 
-    let createdCount = 0;
-    const errors = [];
+    const firestore = await loadFirestoreModule();
+    const batch = firestore.writeBatch(api.db);
+    const now = new Date().toISOString();
+    const date = taipeiDate();
+    const drafts = [];
+
     for (const [topic, keywords] of Object.entries(fallbackKeywords)) {
-      try {
-        const result = await api.createKeywordDrafts({
-          topic,
-          keywords: keywords.join("\n"),
-          maxDrafts: keywords.length,
-          sourceUrls: [],
-        });
-        createdCount += result.created?.length || 0;
-      } catch (error) {
-        errors.push(`${topic}: ${error.message || "建立失敗"}`);
+      for (const keyword of keywords) {
+        const draft = buildBackfillDraft({ topic, keyword, date, now });
+        batch.set(firestore.doc(api.db, "drafts", draft.id), {
+          ...draft,
+          createdAt: firestore.serverTimestamp(),
+          updatedAt: firestore.serverTimestamp(),
+        }, { merge: true });
+        drafts.push(draft);
       }
     }
-    return { createdCount, errors };
+
+    await batch.commit();
+    return { createdCount: drafts.length, errors: [] };
   }
 
   async function ensureClientBackfill({ manual = false } = {}) {
