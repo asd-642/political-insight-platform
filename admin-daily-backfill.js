@@ -4,6 +4,7 @@
 
   const state = {
     checked: false,
+    manualBackfill: false,
   };
 
   const fallbackKeywords = {
@@ -51,27 +52,59 @@
       && api?.getCurrentUser?.()
       && api?.isAdmin?.()
       && typeof api.createKeywordDrafts === "function";
-    if (!canCreate) return 0;
+    if (!canCreate) {
+      throw new Error("目前的登入狀態無法用瀏覽器端補建草稿，請重新登入管理員帳號後再按一次。");
+    }
 
     let createdCount = 0;
+    const errors = [];
     for (const [topic, keywords] of Object.entries(fallbackKeywords)) {
-      const result = await api.createKeywordDrafts({
-        topic,
-        keywords: keywords.join("\n"),
-        maxDrafts: keywords.length,
-        sourceUrls: [],
-      });
-      createdCount += result.created?.length || 0;
+      try {
+        const result = await api.createKeywordDrafts({
+          topic,
+          keywords: keywords.join("\n"),
+          maxDrafts: keywords.length,
+          sourceUrls: [],
+        });
+        createdCount += result.created?.length || 0;
+      } catch (error) {
+        errors.push(`${topic}: ${error.message || "建立失敗"}`);
+      }
     }
-    return createdCount;
+    return { createdCount, errors };
   }
 
-  async function ensureClientBackfill() {
+  async function ensureClientBackfill({ manual = false } = {}) {
     if (hasTodayDrafts()) return;
-    const createdCount = await createClientBackfillDrafts().catch(() => 0);
-    if (!createdCount) return;
+    dailyDraftState.message = "伺服器設定暫時壞掉，正在改用管理員登入權限補建今天草稿。";
+    dailyDraftState.error = "";
+    if (typeof renderDailyDraftStatus === "function") renderDailyDraftStatus();
+
+    let result;
+    try {
+      result = await createClientBackfillDrafts();
+    } catch (error) {
+      dailyDraftState.error = error.message || "瀏覽器端補建草稿失敗。";
+      dailyDraftState.message = "";
+      if (typeof renderDailyDraftStatus === "function") renderDailyDraftStatus();
+      return;
+    }
+
+    const createdCount = result.createdCount || 0;
     if (typeof loadDrafts === "function") await loadDrafts();
-    dailyDraftState.message = `伺服器每日產稿暫時失敗，已用後台補救建立 ${createdCount} 篇今天的待審草稿。`;
+
+    if (!createdCount && !hasTodayDrafts()) {
+      dailyDraftState.error = result.errors?.length
+        ? `後台補救產稿也失敗：${result.errors.join("；")}`
+        : "後台補救沒有建立新草稿，請重新登入管理員帳號後再按一次「補跑今日產稿」。";
+      dailyDraftState.message = "";
+      if (typeof renderDailyDraftStatus === "function") renderDailyDraftStatus();
+      return;
+    }
+
+    dailyDraftState.message = createdCount
+      ? `伺服器每日產稿暫時失敗，已用後台補救建立 ${createdCount} 篇今天的待審草稿。`
+      : "今天的待審草稿已存在，草稿列表已重新整理。";
     dailyDraftState.error = "";
     dailyDraftState.status = {
       ok: true,
@@ -86,6 +119,14 @@
       },
     };
     if (typeof renderDailyDraftStatus === "function") renderDailyDraftStatus();
+    if (manual) document.querySelector("#draftReviewQueue")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function waitForIdle() {
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      if (!dailyDraftState?.loading && !draftState?.loading) return;
+      await new Promise((resolve) => window.setTimeout(resolve, 500));
+    }
   }
 
   function reschedule() {
@@ -127,5 +168,15 @@
 
   document.addEventListener("policy-auth-change", scheduleBackfillCheck);
   document.addEventListener("DOMContentLoaded", scheduleBackfillCheck);
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest?.("#runDailyDraftsNow")) return;
+    if (state.manualBackfill) return;
+    state.manualBackfill = true;
+    window.setTimeout(async () => {
+      await waitForIdle();
+      await ensureClientBackfill({ manual: true });
+      state.manualBackfill = false;
+    }, 800);
+  });
   scheduleBackfillCheck();
 })();
