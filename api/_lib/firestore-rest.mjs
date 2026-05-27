@@ -5,21 +5,65 @@ const tokenCache = {
   expiresAt: 0,
 };
 
+function stripEnvAssignment(value) {
+  return String(value || "").replace(/^\s*(FIREBASE_SERVICE_ACCOUNT|GOOGLE_SERVICE_ACCOUNT_JSON)\s*=\s*/i, "");
+}
+
+function stripWrappingQuotes(value) {
+  const trimmed = String(value || "").trim();
+  const first = trimmed[0];
+  const last = trimmed[trimmed.length - 1];
+  if ((first === "'" || first === "\"" || first === "`") && first === last) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
+function parseJsonCandidate(text) {
+  let value = JSON.parse(text.replace(/^\uFEFF/, ""));
+  if (typeof value === "string") {
+    value = JSON.parse(value);
+  }
+  return value;
+}
+
+function serviceAccountCandidates(raw) {
+  const direct = stripWrappingQuotes(stripEnvAssignment(raw));
+  const base64Source = direct.replace(/^base64:/i, "").trim();
+  const candidates = [
+    raw,
+    direct,
+    direct.replace(/\\"/g, "\""),
+  ];
+
+  for (const encoding of ["base64", "base64url"]) {
+    try {
+      candidates.push(Buffer.from(base64Source, encoding).toString("utf8"));
+    } catch {
+      // Try the next representation.
+    }
+  }
+
+  return [...new Set(candidates.map((item) => String(item || "").trim()).filter(Boolean))];
+}
+
 function parseServiceAccount() {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GOOGLE_SERVICE_ACCOUNT_JSON || "";
   if (!raw.trim()) {
     throw new Error("Missing FIREBASE_SERVICE_ACCOUNT on Vercel.");
   }
 
-  const trimmed = raw.trim();
-  const text = trimmed.startsWith("{")
-    ? trimmed
-    : Buffer.from(trimmed, "base64").toString("utf8");
-
   let account;
-  try {
-    account = JSON.parse(text);
-  } catch {
+  for (const candidate of serviceAccountCandidates(raw)) {
+    try {
+      account = parseJsonCandidate(candidate);
+      break;
+    } catch {
+      account = null;
+    }
+  }
+
+  if (!account || typeof account !== "object") {
     throw new Error("FIREBASE_SERVICE_ACCOUNT format is invalid. Paste the full service account JSON or a base64 encoded JSON value.");
   }
 
@@ -131,6 +175,51 @@ function toFirestoreFields(object) {
   );
 }
 
+function normalizeDraftFact(fact, index) {
+  if (Array.isArray(fact)) {
+    return {
+      label: String(fact[0] || `Fact ${index + 1}`),
+      value: String(fact[1] || ""),
+    };
+  }
+  if (fact && typeof fact === "object") {
+    return {
+      label: String(fact.label || fact.name || `Fact ${index + 1}`),
+      value: String(fact.value || fact.text || fact.description || ""),
+    };
+  }
+  return {
+    label: `Fact ${index + 1}`,
+    value: String(fact || ""),
+  };
+}
+
+function normalizeDraftSection(section, index) {
+  if (!section || typeof section !== "object") {
+    return {
+      heading: `Section ${index + 1}`,
+      paragraphs: String(section || ""),
+    };
+  }
+  const paragraphs = Array.isArray(section.paragraphs)
+    ? section.paragraphs.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n")
+    : String(section.paragraphs || section.body || section.content || "").trim();
+  return {
+    ...section,
+    heading: String(section.heading || `Section ${index + 1}`),
+    paragraphs,
+  };
+}
+
+function normalizeDraftForFirestore(data) {
+  if (!data || typeof data !== "object") return data;
+  return {
+    ...data,
+    facts: Array.isArray(data.facts) ? data.facts.map(normalizeDraftFact) : [],
+    sections: Array.isArray(data.sections) ? data.sections.map(normalizeDraftSection) : [],
+  };
+}
+
 function fromFirestoreValue(value = {}) {
   if ("stringValue" in value) return value.stringValue;
   if ("integerValue" in value) return Number(value.integerValue);
@@ -164,8 +253,9 @@ export async function documentExists(collection, id) {
 }
 
 export async function setDocument(collection, id, data) {
+  const safeData = collection === "drafts" ? normalizeDraftForFirestore(data) : data;
   return firestoreFetch(documentUrl(collection, id), {
     method: "PATCH",
-    body: JSON.stringify({ fields: toFirestoreFields(data) }),
+    body: JSON.stringify({ fields: toFirestoreFields(safeData) }),
   });
 }
