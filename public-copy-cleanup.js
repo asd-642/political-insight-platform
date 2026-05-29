@@ -30,34 +30,51 @@
     return TOPIC_WORDS.find((topic) => phrase.includes(topic)) || "公共政策";
   }
 
+  function cleanSubject(value, topic) {
+    const subject = String(value || "")
+      .replace(/追蹤|待補|來源摘要|自動抓取|資料待查核/g, "")
+      .replace(/\s+/g, "")
+      .trim();
+    if (!subject) return `${topic}議題`;
+    if (subject.includes("議題")) return subject;
+    if (TOPIC_WORDS.some((word) => subject.includes(word))) return `${subject}議題`;
+    return `${subject}${topic}議題`;
+  }
+
+  function newsExcerpt(subject) {
+    return `${subject}近期進入公共討論，焦點包括政策背景、主要爭點與後續可能影響。`;
+  }
+
   function cleanupPublicCopy(value) {
     let text = String(value ?? "");
 
     text = text
       .replace(
-        /根據自動抓取來源摘要，?「[^」]+」近期與([^。]+?)議題相關。本文先整理/g,
-        "整理$1議題的",
+        /根據自動抓取來源摘要，?「([^」]+)」近期與([^。]+?)議題相關。本文先整理影響對象、主要爭點與(?:後續需要補充|仍需補充)的資料。?/g,
+        (_, keyword, topic) => newsExcerpt(cleanSubject(keyword, topic)),
       )
       .replace(
-        /根據來源摘要，?[^，。]+近期與([^。]+?)議題相關。本文先整理/g,
-        "整理$1議題的",
+        /根據來源摘要，?([^，。]+)近期與([^。]+?)議題相關。本文先整理影響對象、主要爭點與(?:後續需要補充|仍需補充)的資料。?/g,
+        (_, keyword, topic) => newsExcerpt(cleanSubject(keyword, topic)),
       )
-      .replace(/根據關鍵字「[^」]+」建立待審草稿，?先整理/g, "整理")
+      .replace(/根據關鍵字「([^」]+)」建立待審草稿，?先整理影響對象、主要爭點與(?:後續需要補充|仍需補充)的資料。?/g, (_, keyword) => newsExcerpt(cleanSubject(keyword, "公共政策")))
       .replace(/根據自動抓取來源摘要，?「[^」]+」/g, "根據公開資料")
       .replace(/根據公開資料近期/g, "根據公開資料，近期")
       .replace(/\s*[，,]\s*後續影響與資料待查核(?=\s*(?:追蹤建立)?(?:｜|$))/g, "")
       .replace(
         /(?:本文先)?整理([^。]+?)議題的影響對象、主要爭點與(?:後續需要補充|仍需補充)的資料。?/g,
-        "整理$1議題近期發展，說明主要爭點、政策脈絡與後續觀察方向。",
+        (_, topic) => newsExcerpt(`${String(topic).trim()}議題`),
       )
       .replace(
         /(?:本文先)?整理影響對象、主要爭點與(?:後續需要補充|仍需補充)的資料。?/g,
-        "整理近期政策發展，說明主要爭點、政策脈絡與後續觀察方向。",
+        newsExcerpt("政策議題"),
       )
-      .replace(/內容大綱：([^，。]+?)議題背景、影響對象、主要爭點與後續觀察。?/g, "整理$1議題近期發展，說明主要爭點、政策脈絡與後續觀察方向。")
-      .replace(/內容大綱：政策背景、影響對象、主要爭點與後續觀察。?/g, "整理近期政策發展，說明主要爭點、政策脈絡與後續觀察方向。")
-      .replace(/聚焦([^，。]+?)議題背景、主要爭點與後續觀察。?/g, "整理$1議題近期發展，說明主要爭點、政策脈絡與後續觀察方向。")
-      .replace(/聚焦政策背景、主要爭點與後續觀察。?/g, "整理近期政策發展，說明主要爭點、政策脈絡與後續觀察方向。")
+      .replace(/整理([^，。]+?)議題近期發展，說明主要爭點、政策脈絡與後續觀察方向。?/g, (_, topic) => newsExcerpt(`${String(topic).trim()}議題`))
+      .replace(/內容大綱：([^，。]+?)議題背景、影響對象、主要爭點與後續觀察。?/g, (_, topic) => newsExcerpt(`${String(topic).trim()}議題`))
+      .replace(/內容大綱：政策背景、影響對象、主要爭點與後續觀察。?/g, newsExcerpt("政策議題"))
+      .replace(/聚焦([^，。]+?)議題背景、主要爭點與後續觀察。?/g, (_, topic) => newsExcerpt(`${String(topic).trim()}議題`))
+      .replace(/聚焦政策背景、主要爭點與後續觀察。?/g, newsExcerpt("政策議題"))
+      .replace(/影響對象與政策關聯/g, "政策關聯")
       .replace(/內容大綱：/g, "")
       .replace(/、?影響對象/g, "")
       .replace(/(?:後續需要補充|仍需補充)的資料/g, "後續觀察指標")
@@ -67,12 +84,13 @@
 
     text = text
       .replace(new RegExp(`^(.+?)\\s+(${TOPIC_PATTERN})\\s*追蹤議題整理`, "g"), (_, subject, topic) => {
-        const cleanSubject = String(subject || "").trim();
-        return cleanSubject ? `${cleanSubject}相關${topic}議題整理` : `${topic}議題整理`;
+        const cleanSubject = String(subject || "").replace(/\s+/g, "");
+        return cleanSubject ? `${cleanSubject}${topic}議題` : `${topic}議題`;
       })
       .replace(new RegExp(`^(${TOPIC_PATTERN})\\s*追蹤議題整理`, "g"), "$1議題整理")
-      .replace(new RegExp(`^(.+?)\\s+(${TOPIC_PATTERN})\\s+(政策議題整理)`, "g"), "$1$2$3")
-      .replace(/曾品蓁相關交通議題整理/g, "曾品蓁交通議題待查")
+      .replace(new RegExp(`^(.+?)\\s+(${TOPIC_PATTERN})\\s+政策議題整理`, "g"), (_, subject, topic) => `${String(subject || "").replace(/\s+/g, "")}${topic}政策`)
+      .replace(/議題整理/g, "議題")
+      .replace(/議題議題/g, "議題")
       .replace(/「([^」]+)」/g, (match, phrase) => {
         if (!/(追蹤|待補|來源摘要|自動抓取)/.test(phrase) && !/\s/.test(phrase)) return match;
         return `此${topicFromPhrase(phrase)}議題`;
