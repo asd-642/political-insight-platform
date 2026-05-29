@@ -130,6 +130,19 @@
     return !parent || parent.closest("script, style, textarea, input, code, pre");
   }
 
+  function installLayoutFixes() {
+    if (document.getElementById("public-copy-cleanup-layout")) return;
+    const style = document.createElement("style");
+    style.id = "public-copy-cleanup-layout";
+    style.textContent = `
+      .headline-item span {
+        -webkit-line-clamp: 2;
+        line-height: 1.55;
+      }
+    `;
+    document.head.append(style);
+  }
+
   function cleanTextNodes(root) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     let node = walker.nextNode();
@@ -145,6 +158,7 @@
   function startCleanup() {
     const root = document.body;
     if (!root) return;
+    installLayoutFixes();
 
     let scheduled = false;
     const schedule = () => {
