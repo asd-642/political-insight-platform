@@ -179,6 +179,19 @@
       });
       tag.replaceWith(fragment);
     });
+
+    root.querySelectorAll(".tag-row").forEach((row) => {
+      const seen = new Set();
+      row.querySelectorAll(".tag").forEach((tag) => {
+        const text = cleanupPublicCopy(tag.textContent).trim();
+        if (!text || seen.has(text)) {
+          tag.remove();
+          return;
+        }
+        seen.add(text);
+        if (tag.textContent !== text) tag.textContent = text;
+      });
+    });
   }
 
   function cleanupMetadata() {
