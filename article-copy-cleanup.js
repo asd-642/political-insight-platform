@@ -149,6 +149,38 @@
     }
   }
 
+  function splitTagText(value) {
+    const seen = new Set();
+    return String(value || "")
+      .trim()
+      .split(/\s+/)
+      .map((part) => cleanupPublicCopy(part).trim())
+      .filter((part) => {
+        if (!part || seen.has(part)) return false;
+        seen.add(part);
+        return true;
+      });
+  }
+
+  function splitCombinedTags(root) {
+    root.querySelectorAll(".tag-row .tag").forEach((tag) => {
+      const parts = splitTagText(tag.textContent);
+      if (parts.length <= 1) {
+        const single = parts[0] || "";
+        if (single && tag.textContent !== single) tag.textContent = single;
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+      parts.forEach((part) => {
+        const item = tag.cloneNode(false);
+        item.textContent = part;
+        fragment.append(item);
+      });
+      tag.replaceWith(fragment);
+    });
+  }
+
   function cleanupMetadata() {
     document.title = cleanupPublicCopy(document.title);
     const description = document.querySelector('meta[name="description"]');
@@ -168,6 +200,7 @@
       window.requestAnimationFrame(() => {
         scheduled = false;
         cleanTextNodes(root);
+        splitCombinedTags(root);
         cleanupMetadata();
       });
     };
