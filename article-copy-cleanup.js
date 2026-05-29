@@ -24,6 +24,14 @@
     "預算",
   ];
   const TOPIC_PATTERN = TOPIC_WORDS.join("|");
+  const TAG_LABELS = {
+    budget: "財經",
+    housing: "居住",
+    energy: "能源",
+    transport: "交通",
+    labor: "勞工",
+    education: "教育",
+  };
 
   function getArticleRoot() {
     return document.querySelector("#articleRoot");
@@ -125,6 +133,8 @@
       .replace(/\s+([，。；：])/g, "$1")
       .replace(/\s{2,}/g, " ")
       .trim();
+
+    text = TAG_LABELS[text.toLowerCase()] || text;
 
     return text;
   }
