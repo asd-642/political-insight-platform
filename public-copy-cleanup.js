@@ -32,6 +32,15 @@
     labor: "勞工",
     education: "教育",
   };
+  const PUBLIC_TAG_BLOCKLIST = new Set([
+    "待查核",
+    "待核查",
+    "待審核",
+    "待審",
+    "待補",
+    "待補資料",
+    "資料待查核",
+  ]);
 
   function topicFromPhrase(value) {
     const phrase = String(value || "");
@@ -172,7 +181,7 @@
       .split(/\s+/)
       .map((part) => cleanupPublicCopy(part).trim())
       .filter((part) => {
-        if (!part || seen.has(part)) return false;
+        if (!part || PUBLIC_TAG_BLOCKLIST.has(part) || seen.has(part)) return false;
         seen.add(part);
         return true;
       });
@@ -200,7 +209,7 @@
       const seen = new Set();
       row.querySelectorAll(".tag").forEach((tag) => {
         const text = cleanupPublicCopy(tag.textContent).trim();
-        if (!text || seen.has(text)) {
+        if (!text || PUBLIC_TAG_BLOCKLIST.has(text) || seen.has(text)) {
           tag.remove();
           return;
         }
