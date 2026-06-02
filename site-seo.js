@@ -181,5 +181,16 @@
     if (attempt < 6) window.setTimeout(() => tryArticleSchema(attempt + 1), 180 * (attempt + 1));
   }
 
+  function loadPeopleDirectoryOverride() {
+    if (!document.querySelector("#peopleList")) return;
+    if (document.querySelector('script[data-people-directory-override="true"]')) return;
+    const script = document.createElement("script");
+    script.src = "people-directory-override.js?v=20260602-1";
+    script.defer = true;
+    script.dataset.peopleDirectoryOverride = "true";
+    document.body.append(script);
+  }
+
   tryArticleSchema();
+  loadPeopleDirectoryOverride();
 })();
