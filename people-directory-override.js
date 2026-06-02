@@ -80,10 +80,12 @@
   }
 
   function articleMatchesPerson(article, person) {
+    const directRelated = Array.isArray(person.related) && person.related.includes(article.id);
     const personIds = Array.isArray(article.personIds) ? article.personIds : [];
     const people = Array.isArray(article.people) ? article.people : [];
     const context = article.personContext || {};
-    return personIds.includes(person.id) ||
+    return directRelated ||
+      personIds.includes(person.id) ||
       people.some((item) => item?.id === person.id || item?.name === person.name) ||
       context.id === person.id ||
       context.name === person.name;
@@ -91,6 +93,39 @@
 
   function relatedArticlesForPerson(person) {
     return getArticles().filter((article) => articleMatchesPerson(article, person));
+  }
+
+  const excludedRoleKeywords = ["總統", "行政院", "部長", "立法委員", "縣長", "市長", "首長"];
+
+  function isAllowedRole(person) {
+    const role = String(person?.role || "");
+    return !excludedRoleKeywords.some((keyword) => role.includes(keyword));
+  }
+
+  function visiblePeopleWithPosts() {
+    const profiles = new Map();
+    [
+      ...directoryPeople,
+      ...(window.PolicyPulseContent?.people || []),
+    ].forEach((person) => {
+      if (!person?.id && !person?.name) return;
+      const key = person.id || `name:${person.name}`;
+      const current = profiles.get(key) || {};
+      profiles.set(key, { ...current, ...person });
+    });
+
+    return [...profiles.values()]
+      .map((person) => ({
+        ...person,
+        relatedCount: relatedArticlesForPerson(person).length,
+      }))
+      .filter((person) => isAllowedRole(person) && person.relatedCount > 0)
+      .sort((a, b) => (
+        b.relatedCount - a.relatedCount ||
+        (Number.isFinite(a.directoryOrder) ? a.directoryOrder : Number.MAX_SAFE_INTEGER) -
+          (Number.isFinite(b.directoryOrder) ? b.directoryOrder : Number.MAX_SAFE_INTEGER) ||
+        String(a.name || "").localeCompare(String(b.name || ""), "zh-Hant")
+      ));
   }
 
   function currentQuery() {
@@ -167,11 +202,17 @@
     if (!container || !directoryPeople.length) return;
 
     const query = currentQuery();
-    const people = directoryPeople.filter((person) => personMatchesQuery(person, query));
+    const people = visiblePeopleWithPosts().filter((person) => personMatchesQuery(person, query));
     const totalPages = Math.max(1, Math.ceil(people.length / PEOPLE_PER_PAGE));
     currentPage = Math.min(Math.max(1, currentPage), totalPages);
     const pageStart = (currentPage - 1) * PEOPLE_PER_PAGE;
     const pageItems = people.slice(pageStart, pageStart + PEOPLE_PER_PAGE);
+
+    const finishRender = () => {
+      window.setTimeout(() => {
+        rendering = false;
+      }, 0);
+    };
 
     rendering = true;
     container.dataset.localPoliticians = "active";
@@ -180,13 +221,12 @@
     if (!pageItems.length) {
       container.innerHTML = '<div class="empty-state">目前沒有符合條件的人物。</div>';
       renderPagination(people.length, totalPages);
-      rendering = false;
+      finishRender();
       return;
     }
 
     pageItems.forEach((person) => {
       const relatedArticles = relatedArticlesForPerson(person);
-      const relatedStatus = relatedArticles.length ? `${relatedArticles.length} 篇` : "待建立";
       const button = document.createElement("button");
       button.className = "person-card";
       button.type = "button";
@@ -199,7 +239,7 @@
         <p>${escapeHtml(person.stance)}</p>
         <div class="person-meta">
           <span>關注議題<strong>${escapeHtml(person.focus)}</strong></span>
-          <span>文章連結<strong>${escapeHtml(relatedStatus)}</strong></span>
+          <span>相關條目<strong>${relatedArticles.length}</strong></span>
         </div>
       `;
       button.addEventListener("click", () => showPersonDialog(person));
@@ -207,7 +247,7 @@
     });
 
     renderPagination(people.length, totalPages);
-    rendering = false;
+    finishRender();
   }
 
   function articleUrl(article) {
@@ -280,7 +320,7 @@
     const peopleList = document.querySelector("#peopleList");
     if (peopleList) {
       new MutationObserver(() => {
-        if (!rendering && peopleList.dataset.localPoliticians !== "active") scheduleRender(60);
+        if (!rendering) scheduleRender(60);
       }).observe(peopleList, { childList: true });
     }
   }
