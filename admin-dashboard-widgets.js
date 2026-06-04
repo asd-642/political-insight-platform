@@ -16,6 +16,16 @@
     ["教育", /教育|校園|學費|高教|技職|課綱/],
   ];
   const palette = ["#087a6d", "#b66a00", "#315d8c", "#7a4a89", "#4f7d35", "#9b3d35", "#5a6472"];
+  const trafficRanges = new Set(["hourly", "daily", "monthly"]);
+  let trafficRange = "daily";
+  let latestTrafficEvents = [];
+
+  try {
+    const savedRange = localStorage.getItem("policyPulseTrafficRange");
+    if (trafficRanges.has(savedRange)) trafficRange = savedRange;
+  } catch {
+    // Keep the default range when storage is unavailable.
+  }
 
   function installStyles() {
     if (document.querySelector("#adminDashboardWidgetStyles")) return;
@@ -30,10 +40,11 @@
       .traffic-line-path{fill:none;stroke:#2dd4bf;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
       .traffic-line-point{fill:#2dd4bf;stroke:var(--panel, #fffdf8);stroke-width:3}
       .traffic-line-value{fill:var(--ink, #101820);font-size:13px;font-weight:900;text-anchor:middle}
-      .traffic-line-labels{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+      .traffic-line-labels{display:grid;grid-template-columns:repeat(var(--traffic-columns,7),minmax(0,1fr));gap:6px}
       .traffic-line-label{display:grid;gap:2px;min-width:0;text-align:center}
       .traffic-line-label strong{font-size:14px;color:var(--ink, #101820)}
       .traffic-line-label small{font-size:12px;color:var(--muted, #52606d);white-space:nowrap}
+      .traffic-line-label.is-quiet strong,.traffic-line-label.is-quiet small{visibility:hidden}
       .topic-chart-shell{display:grid;grid-template-columns:minmax(116px,150px) minmax(0,360px);gap:18px;align-items:center;justify-content:start}
       .topic-donut{width:140px;max-width:100%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;background:rgba(8,122,109,.12)}
       .topic-donut::after{content:"";position:absolute;inset:24%;border-radius:50%;background:var(--panel, #fffdf8)}
@@ -105,6 +116,126 @@
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   }
 
+  function pad2(value) {
+    return String(value).padStart(2, "0");
+  }
+
+  function localHourKey(date) {
+    return `${localDateKey(date)}-${pad2(date.getHours())}`;
+  }
+
+  function localMonthKey(date) {
+    return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}`;
+  }
+
+  function trafficRangeLabel(range) {
+    if (range === "hourly") return "每小時";
+    if (range === "monthly") return "每月";
+    return "每天";
+  }
+
+  function trafficConfig(range) {
+    const now = new Date();
+    if (range === "hourly") {
+      return {
+        range,
+        count: 24,
+        labelEvery: 3,
+        aria: "最近 24 小時每小時受眾流量折線圖",
+        start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() - 23),
+        add(date, offset) {
+          date.setHours(date.getHours() + offset);
+        },
+        key: localHourKey,
+        label(date) {
+          return `${pad2(date.getHours())}:00`;
+        },
+        title(date) {
+          return `${date.getMonth() + 1}/${date.getDate()} ${pad2(date.getHours())}:00`;
+        },
+      };
+    }
+    if (range === "monthly") {
+      return {
+        range,
+        count: 12,
+        labelEvery: 1,
+        aria: "最近 12 個月每月受眾流量折線圖",
+        start: new Date(now.getFullYear(), now.getMonth() - 11, 1),
+        add(date, offset) {
+          date.setMonth(date.getMonth() + offset);
+        },
+        key: localMonthKey,
+        label(date) {
+          return `${date.getFullYear()}/${date.getMonth() + 1}`;
+        },
+        title(date) {
+          return `${date.getFullYear()} 年 ${date.getMonth() + 1} 月`;
+        },
+      };
+    }
+    return {
+      range: "daily",
+      count: 30,
+      labelEvery: 5,
+      aria: "最近 30 天每天受眾流量折線圖",
+      start: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29),
+      add(date, offset) {
+        date.setDate(date.getDate() + offset);
+      },
+      key: localDateKey,
+      label(date) {
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+      },
+      title(date) {
+        return localDateKey(date);
+      },
+    };
+  }
+
+  function trafficBuckets(config) {
+    return Array.from({ length: config.count }, (_, offset) => {
+      const date = new Date(config.start);
+      config.add(date, offset);
+      return {
+        key: config.key(date),
+        label: config.label(date),
+        title: config.title(date),
+        count: 0,
+        showLabel: offset === 0 || offset === config.count - 1 || offset % config.labelEvery === 0,
+      };
+    });
+  }
+
+  function syncTrafficRangeButtons() {
+    document.querySelectorAll("[data-traffic-range]").forEach((button) => {
+      const active = button.dataset.trafficRange === trafficRange;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  function setupTrafficRangeControls() {
+    const filter = document.querySelector(".dashboard-filter");
+    if (!filter) return;
+    if (!filter.__trafficRangeBound) {
+      filter.__trafficRangeBound = true;
+      filter.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-traffic-range]");
+        if (!button || !trafficRanges.has(button.dataset.trafficRange)) return;
+        trafficRange = button.dataset.trafficRange;
+        try {
+          localStorage.setItem("policyPulseTrafficRange", trafficRange);
+        } catch {
+          // Rendering should still work even when storage is unavailable.
+        }
+        syncTrafficRangeButtons();
+        renderTraffic(latestTrafficEvents);
+      });
+    }
+    syncTrafficRangeButtons();
+  }
+
   function normalizeTopic(value = "") {
     const text = String(value).trim();
     if (!text) return "";
@@ -135,7 +266,7 @@
 
   function sourceLabel(event) {
     const payload = payloadOf(event);
-    const raw = String(payload.source || payload.channel || payload.referrer || payload.from || "").trim();
+    const raw = String(event?.source || event?.referrerHost || payload.source || payload.channel || payload.referrerHost || payload.referrer || payload.from || "").trim();
     const lower = raw.toLowerCase();
     if (lower.includes("google")) return "Google 搜尋";
     if (lower.includes("facebook")) return "Facebook";
@@ -159,7 +290,8 @@
 
   function browserLabel(event) {
     const payload = payloadOf(event);
-    const text = String(payload.browser || payload.userAgent || payload.ua || navigator.userAgent || "").toLowerCase();
+    const text = String(event?.browser || event?.userAgent || event?.ua || payload.browser || payload.userAgent || payload.ua || "").toLowerCase();
+    if (!text) return "";
     if (text.includes("edg")) return "Edge";
     if (text.includes("chrome") || text.includes("crios")) return "Chrome";
     if (text.includes("firefox")) return "Firefox";
@@ -171,18 +303,13 @@
   function renderTraffic(events) {
     const chart = document.querySelector("#trafficTrendChart");
     if (!chart) return;
-    const today = new Date();
-    const buckets = Array.from({ length: 7 }, (_, offset) => {
-      const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (6 - offset));
-      return {
-        key: localDateKey(date),
-        label: new Intl.DateTimeFormat("zh-Hant-TW", { weekday: "short" }).format(date),
-        count: 0,
-      };
-    });
+    latestTrafficEvents = Array.isArray(events) ? events : [];
+    setupTrafficRangeControls();
+    const config = trafficConfig(trafficRange);
+    const buckets = trafficBuckets(config);
     const bucketMap = new Map(buckets.map((bucket) => [bucket.key, bucket]));
-    events.forEach((event) => {
-      const key = localDateKey(eventDate(event));
+    latestTrafficEvents.forEach((event) => {
+      const key = config.key(eventDate(event));
       const bucket = bucketMap.get(key);
       if (bucket) bucket.count += 1;
     });
@@ -206,7 +333,7 @@
     });
     chart.innerHTML = `
       <div class="traffic-line-chart">
-        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="最近七天受眾流量折線圖">
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${config.aria}">
           ${gridRows.join("")}
           <path class="traffic-line-area" d="${areaPath}"></path>
           <path class="traffic-line-path" d="${linePath}"></path>
@@ -217,12 +344,12 @@
             `)
             .join("")}
         </svg>
-        <div class="traffic-line-labels">
+        <div class="traffic-line-labels" style="--traffic-columns:${points.length}">
           ${points
             .map((point) => `
-              <div class="traffic-line-label" title="${escapeHtml(point.key)}，${point.count} 筆事件">
-                <strong>${point.count}</strong>
-                <small>${escapeHtml(point.label)}</small>
+              <div class="traffic-line-label ${point.showLabel ? "" : "is-quiet"}" title="${escapeHtml(point.title)}，${trafficRangeLabel(config.range)} ${point.count} 筆事件">
+                <strong>${point.showLabel ? point.count : ""}</strong>
+                <small>${point.showLabel ? escapeHtml(point.label) : ""}</small>
               </div>
             `)
             .join("")}
