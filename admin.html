@@ -18,6 +18,7 @@
     <meta name="robots" content="noindex,nofollow" />
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     <link rel="stylesheet" href="styles.css?v=20260520-7" />
+    <link rel="stylesheet" href="admin-polish.css?v=20260604-1" />
   </head>
   <body class="doc-page admin-page">
     <header class="topbar">
@@ -60,16 +61,27 @@
         <div id="adminStats" class="admin-grid admin-kpi-grid"></div>
 
         <section class="admin-dashboard-grid" aria-label="流量與議題儀表板">
+          <article class="admin-table dashboard-card dashboard-card-wide visitor-dashboard-card">
+            <div class="admin-table-head">
+              <div>
+                <p class="eyebrow">Visitors</p>
+                <h2>訪客判斷</h2>
+              </div>
+            </div>
+            <div id="visitorInsights" class="visitor-insights"></div>
+            <div id="visitorTrail" class="visitor-trail"></div>
+          </article>
+
           <article class="admin-table dashboard-card dashboard-card-wide">
             <div class="admin-table-head">
               <div>
                 <p class="eyebrow">Traffic Trend</p>
                 <h2>受眾流量趨勢</h2>
               </div>
-              <div class="dashboard-filter" aria-label="時間範圍">
-                <span>24h</span>
-                <span class="is-active">7d</span>
-                <span>30d</span>
+              <div class="dashboard-filter" aria-label="流量時間單位">
+                <button type="button" data-traffic-range="hourly" aria-pressed="false">每小時</button>
+                <button class="is-active" type="button" data-traffic-range="daily" aria-pressed="true">每天</button>
+                <button type="button" data-traffic-range="monthly" aria-pressed="false">每月</button>
               </div>
             </div>
             <div id="trafficTrendChart" class="traffic-chart"></div>
@@ -281,10 +293,10 @@
 
     <script src="utils.js?v=20260524-1"></script>
     <script src="firebase-config.js"></script>
-    <script src="firebase-bootstrap.js?v=20260602-1"></script>
+    <script src="firebase-bootstrap.js?v=20260604-1"></script>
     <script src="published-review-flow.js?v=20260602-1"></script>
-    <script src="auth-theme.js?v=20260525-2"></script>
-    <script src="admin.js?v=20260602-1"></script>
-    <script src="admin-dashboard-widgets.js?v=20260603-1"></script>
+    <script src="auth-theme.js?v=20260604-1"></script>
+    <script src="admin.js?v=20260604-1"></script>
+    <script src="admin-dashboard-widgets.js?v=20260604-1"></script>
   </body>
 </html>
