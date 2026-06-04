@@ -316,7 +316,7 @@ const seedContent = {
       date: "2026-05-18",
       topic: "housing",
       title: "租屋補貼新制版本更新",
-      description: "新增地方執行差異欄位，標記待補資料。",
+      description: "新增地方執行差異欄位，標記觀察指標。",
     },
     {
       date: "2026-05-17",
@@ -708,7 +708,7 @@ function renderWatchList() {
   if (!ids.length) {
     container.innerHTML = `
       <div class="watch-empty">
-        <strong>尚未追蹤文章</strong>
+        <strong>追蹤清單目前是空的</strong>
         <span>到文章頁按「追蹤此議題」後，會出現在這裡。</span>
       </div>
     `;
@@ -775,16 +775,7 @@ function renderArticles() {
     return;
   }
 
-  const createFeedAd = () => {
-    const ad = el("aside", "promo-slot promo-slot-grid", "");
-    ad.dataset.promoSlot = "";
-    ad.setAttribute("aria-label", "文章列表廣告版位");
-    ad.innerHTML = `
-      <span>廣告版位</span>
-      <strong>In-feed / 336 x 280</strong>
-    `;
-    return ad;
-  };
+  const createFeedAd = () => null;
 
   const totalPages = Math.max(1, Math.ceil(list.length / ARTICLES_PER_PAGE));
   state.articlePage = Math.min(Math.max(1, state.articlePage), totalPages);
@@ -813,7 +804,8 @@ function renderArticles() {
     button.addEventListener("click", () => previewOrOpenArticle(article.id));
     container.append(button);
     if (pageItems.length > 1 && index === adInsertIndex) {
-      container.append(createFeedAd());
+      const feedAd = createFeedAd();
+      if (feedAd) container.append(feedAd);
     }
   });
 

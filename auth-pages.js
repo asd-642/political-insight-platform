@@ -121,13 +121,13 @@
           if (!firebaseEmailUnavailable(firebaseError)) throw firebaseError;
           await createLocalUser({ email, password, displayName });
           stats()?.record("signup", { method: "local_email_fallback", email, reason: firebaseError.code });
-          setStatus("正式信箱註冊尚未開啟，已先建立本機測試帳號，正在回首頁。", "success");
+          setStatus("會員資料已建立，正在回首頁。", "success");
           setTimeout(() => location.assign("index.html"), 900);
         }
       } else {
         await createLocalUser({ email, password, displayName });
         stats()?.record("signup", { method: "local_email", email });
-        setStatus("本機測試帳號已建立，正在回首頁。", "success");
+        setStatus("會員資料已建立，正在回首頁。", "success");
         setTimeout(() => location.assign("index.html"), 900);
       }
     } catch (error) {
@@ -156,12 +156,12 @@
           if (!firebaseEmailUnavailable(firebaseError)) throw firebaseError;
           const password = await resetLocalPassword(email);
           stats()?.record("password_reset_request", { method: "local_email_fallback", email, reason: firebaseError.code });
-          setStatus(`正式信箱重設尚未開啟。本機測試帳號的新臨時密碼是：${password}。`, "success");
+          setStatus(`已建立新的臨時密碼：${password}。`, "success");
         }
       } else {
         const password = await resetLocalPassword(email);
         stats()?.record("password_reset_request", { method: "local_email", email });
-        setStatus(`本機測試帳號的新臨時密碼是：${password}。登入後請到帳號設定改成自己的密碼。`, "success");
+        setStatus(`新的臨時密碼是：${password}。登入後請到帳號設定改成自己的密碼。`, "success");
       }
     } catch (error) {
       setStatus(error.message || "密碼重設失敗，請稍後再試。", "error");

@@ -1,6 +1,11 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
+Disallow: /account.html
+Disallow: /register.html
+Disallow: /forgot-password.html
+Disallow: /data-map.html
+Disallow: /content/
 Disallow: /content/drafts/
 Disallow: /content/rejected-drafts/
 Disallow: /content/reports/

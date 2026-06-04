@@ -254,12 +254,7 @@ function renderMissing() {
 }
 
 function renderInlineAd(label = "In-article / 728 x 90") {
-  return `
-    <aside class="promo-slot article-inline-ad" data-promo-slot aria-label="文章內廣告版位">
-      <span>廣告版位</span>
-      <strong>${articleEscape(label)}</strong>
-    </aside>
-  `;
+  return "";
 }
 
 function renderBodySections(sections) {
@@ -995,8 +990,8 @@ function renderArticle(article) {
           <p>閱讀這類政策文章時，先分辨哪些是已公開的文件與數字，哪些只是各方主張。若一項政策只提出方向，卻沒有預算來源、期程或責任單位，就還不能視為已經落實。</p>
         </div>
         <div>
-          <h2>資料缺口</h2>
-          <p>後續最需要補的是原始公告、會議紀錄、預算表、執行進度與地方回應。這些資料可以用來判斷政策是持續推進、暫時停留在宣示，還是已經出現落差。</p>
+          <h2>資料來源與限制</h2>
+          <p>讀者判讀政策時，可優先比對原始公告、會議紀錄、預算表、執行進度與地方回應。這些資料能協助確認政策是持續推進、暫時停留在宣示，還是已經出現落差。</p>
         </div>
       </section>
 
@@ -1008,7 +1003,7 @@ function renderArticle(article) {
           本文為公開資料、新聞來源與政策脈絡整理，目的在於協助讀者理解議題背景與後續追蹤方向，不構成法律、投資、醫療或其他專業建議。
         </p>
         <p>
-          文章中的支持方、疑慮方與待查資料為編輯整理架構，並不代表本站立場。若內容涉及人物、機關或事件責任，仍應以主管機關公告、法院判決、議事紀錄與當事方正式說法為準。
+          文章中的支持方、疑慮方與觀察資料為編輯整理架構，並不代表本站立場。若內容涉及人物、機關或事件責任，仍應以主管機關公告、法院判決、議事紀錄與當事方正式說法為準。
         </p>
       </section>
 
@@ -1025,14 +1020,10 @@ function renderArticle(article) {
     </article>
 
     <aside class="article-aside">
-      <section class="promo-slot" data-promo-slot>
-        <span>廣告版位</span>
-        <strong>300 x 250</strong>
-      </section>
       <section class="article-side-card">
         <p class="eyebrow">Reading Note</p>
         <h2>本站閱讀原則</h2>
-        <p>政策文章分開呈現事實、支持方、疑慮方與待補資料，避免把評論混成事實。</p>
+        <p>政策文章分開呈現事實、支持方、疑慮方與觀察指標，避免把評論混成事實。</p>
       </section>
       ${renderInlineAd("Sidebar / 300 x 600")}
     </aside>

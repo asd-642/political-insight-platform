@@ -21,10 +21,7 @@
     />
     <meta name="robots" content="noindex,nofollow" />
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
     <link rel="stylesheet" href="styles.css?v=20260520-7" />
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4133542156062168"
-      crossorigin="anonymous"></script>
   </head>
   <body class="doc-page admin-page data-map-page">
     <header class="topbar">
@@ -88,7 +85,7 @@
             <article>
               <span>03</span>
               <strong>後台整理資料</strong>
-              <p>資料表把事件歸到會員、文章、廣告版位與審核流程。</p>
+              <p>資料表把事件歸到會員、文章、內容呈現與審核流程。</p>
             </article>
             <article>
               <span>04</span>
@@ -107,7 +104,7 @@
             <button id="refreshDataMap" class="admin-button" type="button">重新整理</button>
           </div>
           <div class="data-record-note">
-            本區只讀取這台瀏覽器的本機資料，不會把你的帳號或事件送到外部。正式上線後可以改成讀 Firebase 或後端資料庫。
+            本區只讀取這台瀏覽器的本機資料，不會把你的帳號或事件送到外部。部署環境可以改成讀 Firebase 或後端資料庫。
           </div>
           <div id="localRecordRows" class="data-record-list"></div>
         </section>
@@ -173,7 +170,7 @@
                 <span>04</span>
                 <h3>articles</h3>
               </div>
-              <p>文章、草稿、來源與審稿狀態，支援你的 AI 草稿審核流程。</p>
+              <p>文章、來源與審稿狀態，支援編輯台的內容審核流程。</p>
               <dl>
                 <div><dt>id</dt><dd>文章代號</dd></div>
                 <div><dt>topic</dt><dd>財經、居住、能源等分類</dd></div>
@@ -205,7 +202,7 @@
                 <span>06</span>
                 <h3>ad_events</h3>
               </div>
-              <p>廣告版位曝光與點擊紀錄，之後可和 AdSense 或自售廣告報表對照。</p>
+              <p>內容曝光與互動紀錄，之後可和營運報表對照。</p>
               <dl>
                 <div><dt>impressionId</dt><dd>曝光 ID</dd></div>
                 <div><dt>slot</dt><dd>728x90、300x250、in-feed</dd></div>
@@ -253,8 +250,8 @@
     </main>
 
     <script src="firebase-config.js"></script>
-    <script src="firebase-bootstrap.js?v=20260520-2"></script>
-    <script src="auth-theme.js?v=20260525-2"></script>
+    <script src="firebase-bootstrap.js?v=20260604-1"></script>
+    <script src="auth-theme.js?v=20260604-1"></script>
     <script src="content/generated-content.js"></script>
     <script src="data-map.js?v=20260520-1"></script>
   </body>

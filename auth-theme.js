@@ -3,6 +3,9 @@ const AUTH_KEYS = {
   session: "policyPulseSession",
   theme: "policyPulseTheme",
   stats: "policyPulseStats",
+  visitor: "policyPulseVisitorId",
+  visitSession: "policyPulseVisitSessionId",
+  visitLanding: "policyPulseVisitLandingPath",
 };
 
 const AUTH_CONFIG = {
@@ -71,19 +74,175 @@ function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function safeGet(storage, key) {
+  try {
+    return storage?.getItem?.(key) || "";
+  } catch {
+    return "";
+  }
+}
+
+function safeSet(storage, key, value) {
+  try {
+    storage?.setItem?.(key, value);
+  } catch {
+    // Storage can be unavailable in some privacy modes; keep the event flowing.
+  }
+}
+
+function localStore() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function sessionStore() {
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+function randomId(prefix) {
+  const bytes = new Uint8Array(6);
+  if (window.crypto?.getRandomValues) {
+    window.crypto.getRandomValues(bytes);
+  } else {
+    bytes.forEach((_, index) => {
+      bytes[index] = Math.floor(Math.random() * 256);
+    });
+  }
+  const suffix = Array.from(bytes)
+    .map((byte) => byte.toString(36).padStart(2, "0"))
+    .join("")
+    .slice(0, 10);
+  return `${prefix}-${Date.now().toString(36)}-${suffix}`;
+}
+
+function readOrCreateVisitorId() {
+  const store = localStore();
+  const existing = safeGet(store, AUTH_KEYS.visitor);
+  if (existing) return existing;
+  const next = randomId("v");
+  safeSet(store, AUTH_KEYS.visitor, next);
+  return next;
+}
+
+function readOrCreateVisitSessionId() {
+  const store = sessionStore();
+  const existing = safeGet(store, AUTH_KEYS.visitSession);
+  if (existing) return existing;
+  const next = randomId("s");
+  safeSet(store, AUTH_KEYS.visitSession, next);
+  safeSet(store, AUTH_KEYS.visitLanding, location.pathname.split("/").pop() || "index.html");
+  return next;
+}
+
+function browserName(ua = navigator.userAgent) {
+  const text = String(ua || "").toLowerCase();
+  if (text.includes("edg")) return "Edge";
+  if (text.includes("firefox")) return "Firefox";
+  if (text.includes("samsung")) return "Samsung Internet";
+  if (text.includes("crios") || text.includes("chrome")) return "Chrome";
+  if (text.includes("safari")) return "Safari";
+  return "其他瀏覽器";
+}
+
+function deviceName() {
+  const ua = String(navigator.userAgent || "").toLowerCase();
+  if (/mobile|iphone|ipod|android.*mobile/.test(ua)) return "手機";
+  if (/ipad|tablet|android/.test(ua)) return "平板";
+  return "桌機";
+}
+
+function screenBucket() {
+  const width = Math.max(Number(window.innerWidth || 0), Number(window.screen?.width || 0));
+  if (width < 640) return "小螢幕";
+  if (width < 1024) return "中螢幕";
+  if (width < 1440) return "桌面";
+  return "大桌面";
+}
+
+function referrerHost(referrer = document.referrer) {
+  if (!referrer) return "";
+  try {
+    return new URL(referrer).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function trafficSourceFromReferrer(host) {
+  const text = String(host || "").toLowerCase();
+  if (!text) return "直接 / 未標記";
+  if (text === location.hostname.replace(/^www\./, "")) return "站內跳轉";
+  if (text.includes("google")) return "Google 搜尋";
+  if (text.includes("facebook")) return "Facebook";
+  if (text.includes("threads")) return "Threads";
+  if (text.includes("line")) return "LINE";
+  if (text.includes("yahoo")) return "Yahoo";
+  return host;
+}
+
+function currentPageKind() {
+  if (isAdminPage()) return "admin";
+  if (document.body?.classList?.contains("article-page") || location.pathname.includes("/articles/")) return "article";
+  return "public";
+}
+
+function eventContext() {
+  const host = referrerHost();
+  const store = sessionStore();
+  return {
+    visitorId: readOrCreateVisitorId(),
+    visitSessionId: readOrCreateVisitSessionId(),
+    source: trafficSourceFromReferrer(host),
+    referrerHost: host,
+    browser: browserName(),
+    device: deviceName(),
+    screen: screenBucket(),
+    pageKind: currentPageKind(),
+    landingPath: safeGet(store, AUTH_KEYS.visitLanding) || location.pathname.split("/").pop() || "index.html",
+  };
+}
+
 function recordEvent(type, payload = {}) {
   const stats = readJson(AUTH_KEYS.stats, []);
+  const context = eventContext();
+  const enrichedPayload = {
+    ...payload,
+    ...context,
+  };
   const event = {
     type,
-    payload,
+    payload: enrichedPayload,
     path: location.pathname.split("/").pop() || "index.html",
+    visitorId: context.visitorId,
+    visitSessionId: context.visitSessionId,
+    source: context.source,
+    browser: context.browser,
+    device: context.device,
     at: new Date().toISOString(),
   };
   stats.push(event);
-  localStorage.setItem(AUTH_KEYS.stats, JSON.stringify(stats.slice(-1000)));
-  firebaseApi()?.recordEvent?.(type, payload).catch(() => {});
-  firebaseApi()?.logEvent?.(type, payload);
+  safeSet(localStore(), AUTH_KEYS.stats, JSON.stringify(stats.slice(-1000)));
+  const remoteRecord = firebaseApi()?.recordEvent?.(type, enrichedPayload);
+  if (remoteRecord?.catch) remoteRecord.catch(() => {});
+  firebaseApi()?.logEvent?.(type, {
+    ...payload,
+    source: context.source,
+    browser: context.browser,
+    device: context.device,
+    pageKind: context.pageKind,
+  });
 }
+
+window.PolicyPulseVisitor = {
+  current: eventContext,
+};
 
 window.PolicyPulseStats = {
   record: recordEvent,
@@ -395,7 +554,7 @@ function showAuthOverlay() {
           </button>
         </div>
         <div class="auth-bottom-row">
-          ${allowDemoAccess ? '<button class="auth-ghost" data-auth-action="demo" type="button">使用示範帳號</button>' : ""}
+          ${allowDemoAccess ? '<button class="auth-ghost" data-auth-action="demo" type="button">使用開發帳號</button>' : ""}
           <button class="auth-ghost" data-auth-action="theme" type="button">切換明暗色</button>
           <button class="auth-ghost" data-auth-action="close" type="button">稍後再說</button>
         </div>
@@ -417,7 +576,7 @@ function showAuthOverlay() {
   });
 
   if (isAdminPage()) {
-    message.textContent = "後台請使用 Google 管理員帳號登入；示範帳號只用於前台留言測試。";
+    message.textContent = "後台請使用 Google 管理員帳號登入；開發帳號只用於本機檢查。";
   }
 
   const login = async ({ email, password }) => {
