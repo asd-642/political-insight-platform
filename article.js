@@ -62,6 +62,17 @@ function joinOrFallback(items, fallback) {
   return text || fallback;
 }
 
+function normalizeSectionTable(table) {
+  if (!table) return null;
+  const headers = normalizeList(table.headers).map((header) => String(header).trim()).filter(Boolean);
+  const rows = normalizeList(table.rows)
+    .map((row) => (Array.isArray(row) ? row : normalizeList(row)))
+    .map((row) => row.map((cell) => String(cell ?? "").trim()))
+    .filter((row) => row.some(Boolean));
+  if (!headers.length || !rows.length) return null;
+  return { headers, rows };
+}
+
 function enrichArticleSections(article, sections, topic) {
   const facts = normalizeFacts(article);
   const factText = facts
@@ -76,7 +87,12 @@ function enrichArticleSections(article, sections, topic) {
     const paragraphs = normalizeList(section.paragraphs)
       .map((paragraph) => String(paragraph).trim())
       .filter(Boolean);
-    if (paragraphs.length < 2) {
+    const bullets = normalizeList(section.bullets)
+      .map((item) => String(item).trim())
+      .filter(Boolean);
+    const table = normalizeSectionTable(section.table);
+    const hasStructuredContent = bullets.length || table;
+    if (paragraphs.length < 2 && !hasStructuredContent) {
       paragraphs.push(
         `這一段後續會再比對來源資料、時間序列與相關單位說法，避免只停留在單一訊息。對讀者來說，重點不是先判斷誰對誰錯，而是先確認這項議題的事實基礎是否足夠清楚。`,
       );
@@ -84,6 +100,8 @@ function enrichArticleSections(article, sections, topic) {
     return {
       heading: section.heading || `段落 ${index + 1}`,
       paragraphs,
+      bullets,
+      table,
     };
   });
 
@@ -142,6 +160,8 @@ function normalizeBodySections(article, topic) {
     return enrichArticleSections(article, article.sections.map((section, index) => ({
       heading: section.heading || section.title || `段落 ${index + 1}`,
       paragraphs: normalizeList(section.paragraphs || section.body || section.content),
+      bullets: normalizeList(section.bullets),
+      table: section.table,
     })), topic);
   }
 
@@ -153,6 +173,8 @@ function normalizeBodySections(article, topic) {
       return {
         heading: section.heading || section.title || `段落 ${index + 1}`,
         paragraphs: normalizeList(section.paragraphs || section.body || section.content),
+        bullets: normalizeList(section.bullets),
+        table: section.table,
       };
     }), topic);
   }
@@ -257,6 +279,45 @@ function renderInlineAd(label = "In-article / 728 x 90") {
   return "";
 }
 
+function renderSectionBullets(items) {
+  const bullets = normalizeList(items)
+    .map((item) => String(item).trim())
+    .filter(Boolean);
+  if (!bullets.length) return "";
+  return `
+    <ul class="article-section-list">
+      ${bullets.map((item) => `<li>${articleEscape(item)}</li>`).join("")}
+    </ul>
+  `;
+}
+
+function renderSectionTable(table) {
+  const normalized = normalizeSectionTable(table);
+  if (!normalized) return "";
+  return `
+    <div class="article-section-table-wrap">
+      <table class="article-section-table">
+        <thead>
+          <tr>
+            ${normalized.headers.map((header) => `<th>${articleEscape(header)}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${normalized.rows
+            .map((row) => `
+              <tr>
+                ${normalized.headers
+                  .map((_, index) => `<td>${articleEscape(row[index] || "")}</td>`)
+                  .join("")}
+              </tr>
+            `)
+            .join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderBodySections(sections) {
   return sections
     .map((section, index) => {
@@ -266,10 +327,14 @@ function renderBodySections(sections) {
       const paragraphs = normalizeList(section.paragraphs)
         .map((paragraph) => `<p>${articleEscape(paragraph)}</p>`)
         .join("");
+      const bullets = renderSectionBullets(section.bullets);
+      const table = renderSectionTable(section.table);
       return `
         <section class="article-news-section">
           ${heading}
           ${paragraphs}
+          ${bullets}
+          ${table}
         </section>
         ${index === 1 ? renderInlineAd() : ""}
       `;

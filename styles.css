@@ -2210,6 +2210,66 @@ body.auth-locked > .site-footer {
   line-height: 1.95;
 }
 
+.article-section-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.article-section-list li {
+  position: relative;
+  padding-left: 18px;
+  color: color-mix(in srgb, var(--ink) 84%, var(--muted));
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.article-section-list li::before {
+  position: absolute;
+  left: 0;
+  color: var(--teal);
+  content: "•";
+  font-weight: 900;
+}
+
+.article-section-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  background: var(--control-bg);
+}
+
+.article-section-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+}
+
+.article-section-table th,
+.article-section-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.65;
+}
+
+.article-section-table th {
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.article-section-table td {
+  color: color-mix(in srgb, var(--ink) 84%, var(--muted));
+  font-size: 15px;
+}
+
+.article-section-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
 .article-related {
   padding-top: 22px;
   border-top: 1px solid var(--line);

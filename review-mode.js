@@ -19,47 +19,69 @@
   ];
 
   function sectionsFor(config) {
+    const facts = Array.isArray(config.facts) ? config.facts : [];
+    const factBullets = facts.map((fact, index) => {
+      if (Array.isArray(fact)) return `${fact[0] || `重點 ${index + 1}`}：${fact[1] || ""}`;
+      return String(fact || "").trim();
+    }).filter(Boolean);
+    const sourceText = Array.isArray(config.sources) ? config.sources.join("、") : "公開資料";
+    const positionRows = config.positionRows || [
+      ["支持方", config.support || config.supportDetail, "檢查政策目標、預算來源與受益對象是否清楚"],
+      ["疑慮方", config.concern || config.concernDetail, "檢查成本、執行能力、公平性與資訊透明度"],
+      ["後續查核", config.next || config.indicators, `回查${sourceText}與後續正式公告`],
+    ];
+    const checkpoints = config.checkpoints || [
+      "是否有正式公告、預算表或會議紀錄可供比對",
+      "主管機關是否說明責任分工、期程與可量化指標",
+      "地方執行資料或統計更新是否與原先說法一致",
+    ];
+
     return [
       {
-        heading: "政策背景",
+        heading: "事件摘要",
+        paragraphs: [
+          config.summary,
+          `本文整理「${config.scope}」的公開資訊與主要爭點，重點放在可查證事實、不同立場與後續觀察指標，而不是單一新聞敘述。`,
+        ],
+      },
+      {
+        heading: "背景脈絡",
         paragraphs: [
           config.context,
-          `這篇整理先把${config.scope}拆成可觀察的公開資料、執行流程與利害關係人，避免只用單一說法判斷政策成效。`,
-        ],
-      },
-      {
-        heading: "為什麼值得追蹤",
-        paragraphs: [
           config.why,
-          `對讀者來說，重點不是只看政策名稱，而是看它是否說清楚預算來源、適用對象、執行單位與可檢查的時間點。`,
         ],
       },
       {
-        heading: "目前可確認的重點",
+        heading: "目前可確認事實",
         paragraphs: [
           config.confirmed,
-          `這些資訊可以作為後續比對基準；若主管機關、議會紀錄或統計資料有更新，就能回頭檢查原本的說法是否一致。`,
+          "以下列出目前可先檢查的基本面向，後續若出現新的正式文件，可再回頭比對是否有變化。",
         ],
+        bullets: factBullets,
       },
       {
-        heading: "支持方的主要理由",
+        heading: "各方主張比較",
+        paragraphs: [
+          "同一項政策通常會同時牽涉支持理由、疑慮理由與後續查核重點。本站將不同主張分開列示，避免把立場判斷寫成既定事實。",
+        ],
+        table: {
+          headers: ["角色", "立場與主張", "需要檢查的資料"],
+          rows: positionRows,
+        },
+      },
+      {
+        heading: "爭點分析",
         paragraphs: [
           config.supportDetail,
-          "支持方通常會強調公共利益、服務改善或資源分配效率。本站會把這些理由拆成可驗證的項目，而不是只保留口號。",
-        ],
-      },
-      {
-        heading: "疑慮方的觀察角度",
-        paragraphs: [
           config.concernDetail,
-          "疑慮不一定代表否定政策，也可能是在提醒成本、執行能力、公平性或資訊透明度還需要更清楚的回應。",
+          "判讀這類爭點時，應把政策目的、執行成本、受影響群體與公開資料完整度分開檢查，才能避免只看單一陣營說法。",
         ],
       },
       {
-        heading: "可用來檢查的資料",
+        heading: "可能影響",
         paragraphs: [
-          `目前最適合回查的資料包括：${config.sources.join("、")}。`,
-          "若只看到新聞標題或宣傳文字，仍不足以判斷政策是否完成；正式文件、統計口徑和會議紀錄會是更穩定的依據。",
+          `${config.scope}後續可能影響民眾權益、地方執行負擔、預算配置或相關產業判斷。實際影響仍需看主管機關的執行期程與公開回報。`,
+          config.next,
         ],
       },
       {
@@ -68,12 +90,13 @@
           config.indicators,
           "這些指標可以幫助讀者看出政策是否只是宣布，或已經進入實際執行與檢討階段。",
         ],
+        bullets: checkpoints,
       },
       {
-        heading: "讀者可以怎麼判斷",
+        heading: "來源與限制",
         paragraphs: [
-          "閱讀公共政策資訊時，可以先問三件事：問題是否具體、工具是否對應問題、結果是否能被外部檢查。",
-          config.reader,
+          `本文主要依據${sourceText}進行脈絡整理。新聞報導只作為事件發展補充，涉及金額、日期、程序或責任歸屬時，仍優先回查正式文件。`,
+          "若不同來源說法不一致，本文會把爭點保留下來，並避免把尚未被正式文件支撐的說法寫成已確認結論。",
         ],
       },
     ];
