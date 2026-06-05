@@ -66,6 +66,19 @@
     let text = String(value ?? "");
 
     text = text
+      .replace(/這篇草稿/g, "本文")
+      .replace(/草稿會先整理/g, "本文整理")
+      .replace(/草稿/g, "文章")
+      .replace(/方便後台審核時判斷是否需要補正式公告、議事紀錄或主管機關回應/g, "方便讀者對照正式公告、議事紀錄與主管機關回應")
+      .replace(/後台審核/g, "公開資料比對")
+      .replace(/發布前可以先確認/g, "閱讀時可以先確認")
+      .replace(/發布前/g, "閱讀時")
+      .replace(/待依來源補齊/g, "可比對公開資料")
+      .replace(/需要補齊的資料/g, "後續可比對的資料")
+      .replace(/後續需要補充的資料/g, "後續觀察方向")
+      .replace(/仍需補充的資料/g, "後續觀察方向")
+      .replace(/下一步補資料/g, "後續觀察")
+      .replace(/待審核|待核查|待查核|已發布待檢查/g, "追蹤中")
       .replace(
         /根據自動抓取來源摘要，?「([^」]+)」近期與([^。]+?)議題相關。本文先整理影響對象、主要爭點與(?:後續需要補充|仍需補充)的資料。?/g,
         (_, keyword, topic) => newsExcerpt(cleanSubject(keyword, topic)),
@@ -219,6 +232,158 @@
     });
   }
 
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function articleTitle(article) {
+    return cleanupPublicCopy(article?.title)
+      .replace(/\s*[，,]\s*後續影響與資料待查核/g, "")
+      .replace(/\s*追蹤建立$/g, "")
+      .replace(/\s*政策議題整理$/g, "政策")
+      .replace(/\s*追蹤議題整理$/g, "議題")
+      .replace(/\s*議題整理$/g, "議題")
+      .replace(/\s+/g, " ")
+      .trim() || String(article?.title || "政策議題");
+  }
+
+  function articleExcerpt(article) {
+    const raw = cleanupPublicCopy(article?.summary);
+    if (raw && !/(草稿|後台審核|發布前|待依來源補齊|需要補齊|待審核|待核查|待查核|根據自動抓取來源摘要|內容大綱)/.test(raw)) return raw;
+    const title = articleTitle(article).replace(/\s+/g, "");
+    const subject = title.includes("議題") ? title : `${title}議題`;
+    return `${subject}近期受到關注，重點包括政策背景、各方說法、預算或執行進度，後續可觀察主管機關回應。`;
+  }
+
+  function articleUrl(id) {
+    if (window.PolicyPulseUtils?.articleUrl) return window.PolicyPulseUtils.articleUrl(id);
+    const encodedId = encodeURIComponent(id);
+    const host = window.location?.hostname || "";
+    const isLocal = host === "localhost" || host === "127.0.0.1" || host === "";
+    return isLocal ? `/article.html?id=${encodedId}` : `/articles/${encodedId}`;
+  }
+
+  function topicName(id) {
+    const topics = window.PolicyPulseContent?.topics || [];
+    return topics.find((topic) => topic.id === id)?.name || TAG_LABELS[String(id || "").toLowerCase()] || id || "政策";
+  }
+
+  function articleImage(article, card) {
+    return card?.querySelector("img")?.getAttribute("src") || article?.image || "assets/podium.png";
+  }
+
+  function cleanFactPair(fact, index) {
+    if (Array.isArray(fact)) {
+      return [
+        cleanupPublicCopy(fact[0] || `重點 ${index + 1}`).replace(/^影響對象$/g, "涉及範圍") || `重點 ${index + 1}`,
+        cleanupPublicCopy(fact[1]) || "可比對公開資料",
+      ];
+    }
+    if (fact && typeof fact === "object") {
+      return [
+        cleanupPublicCopy(fact.label || fact.name || `重點 ${index + 1}`).replace(/^影響對象$/g, "涉及範圍") || `重點 ${index + 1}`,
+        cleanupPublicCopy(fact.value || fact.text || fact.description) || "可比對公開資料",
+      ];
+    }
+    return [`重點 ${index + 1}`, cleanupPublicCopy(fact) || "可比對公開資料"];
+  }
+
+  function renderDetailBody(article) {
+    const facts = (article.facts || []).map(cleanFactPair);
+    const support = cleanupPublicCopy(article.support) || "後續可觀察正式資料、議事紀錄與主管機關回應。";
+    const concern = cleanupPublicCopy(article.concern) || "後續可觀察正式資料、議事紀錄與主管機關回應。";
+    const next = cleanupPublicCopy(article.next) || "後續可觀察正式資料、議事紀錄與主管機關回應。";
+    const sources = (article.sources || []).map(cleanupPublicCopy).filter(Boolean);
+    return `
+      <p class="detail-summary">${escapeHtml(articleExcerpt(article))}</p>
+      <section class="detail-block">
+        <h3>快速事實</h3>
+        <ul>
+          ${facts.map(([label, value]) => `<li><strong>${escapeHtml(label)}：</strong>${escapeHtml(value)}</li>`).join("")}
+        </ul>
+      </section>
+      <section class="detail-block">
+        <h3>支持方說法</h3>
+        <p>${escapeHtml(support)}</p>
+      </section>
+      <section class="detail-block">
+        <h3>疑慮與反對理由</h3>
+        <p>${escapeHtml(concern)}</p>
+      </section>
+      <section class="detail-block">
+        <h3>後續觀察</h3>
+        <p>${escapeHtml(next)}</p>
+      </section>
+      <section class="detail-block">
+        <h3>來源</h3>
+        <div>${sources.map((source) => `<span class="source-pill">${escapeHtml(source)}</span>`).join("")}</div>
+      </section>
+    `;
+  }
+
+  function findArticleByTitle(title) {
+    const target = cleanupPublicCopy(title);
+    const articles = window.PolicyPulseContent?.articles || [];
+    return articles.find((article) => articleTitle(article) === target);
+  }
+
+  function syncVisibleArticleShell() {
+    const grid = document.querySelector("#articleGrid");
+    if (!grid || !window.PolicyPulseContent?.articles?.length) return;
+
+    const card =
+      document.querySelector(".article-card.is-selected") ||
+      document.querySelector(".article-card") ||
+      document.querySelector(".headline-item.is-selected") ||
+      document.querySelector(".headline-item");
+    if (!card) return;
+
+    const cardTitle = card.querySelector("h3, strong")?.textContent?.trim();
+    const article = findArticleByTitle(cardTitle);
+    if (!article) return;
+
+    const title = articleTitle(article);
+    const detailTitle = document.querySelector("#detailTitle");
+    const featured = document.querySelector("#featuredStory");
+    const featuredTitle = featured?.querySelector("h1")?.textContent?.trim();
+    const detailMismatch = detailTitle && cleanupPublicCopy(detailTitle.textContent) !== title;
+    const featuredMismatch = featuredTitle && cleanupPublicCopy(featuredTitle) !== title;
+    if (!detailMismatch && !featuredMismatch) return;
+
+    if (detailTitle) detailTitle.textContent = title;
+    const detailBody = document.querySelector("#detailBody");
+    if (detailBody) detailBody.innerHTML = renderDetailBody(article);
+
+    if (featured) {
+      const image = articleImage(article, card);
+      featured.innerHTML = `
+        <img src="${escapeHtml(image)}" alt="${escapeHtml(topicName(article.topic))}議題封面" decoding="async" fetchpriority="high" />
+        <div class="featured-overlay">
+          <span class="topic-badge">${escapeHtml(topicName(article.topic))}</span>
+          <h1>${escapeHtml(title)}</h1>
+          <p>${escapeHtml(articleExcerpt(article))}</p>
+        </div>
+      `;
+      featured.tabIndex = 0;
+      featured.setAttribute("role", "link");
+      featured.setAttribute("aria-label", `閱讀全文：${title}`);
+      featured.onclick = () => {
+        location.href = articleUrl(article.id);
+      };
+      featured.onkeydown = (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          location.href = articleUrl(article.id);
+        }
+      };
+    }
+  }
+
   function startCleanup() {
     const root = document.body;
     if (!root) return;
@@ -232,6 +397,7 @@
         scheduled = false;
         cleanTextNodes(root);
         splitCombinedTags(root);
+        syncVisibleArticleShell();
       });
     };
 
