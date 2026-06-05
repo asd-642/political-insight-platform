@@ -16,10 +16,9 @@
     </script>
     <script>
       (() => {
-        const path = decodeURIComponent(location.pathname);
-        if (path.includes("/articles/")) {
-          const articleId = (path.split("/").filter(Boolean).pop() || "").replace(/\.html$/i, "");
-          location.replace(`/article.html?id=${encodeURIComponent(articleId)}`);
+        const match = decodeURIComponent(location.pathname).match(/\/articles\/([^/]+?)(?:\.html)?\/?$/);
+        if (match) {
+          location.replace(`/article.html?id=${encodeURIComponent(match[1])}`);
         }
       })();
     </script>
@@ -79,7 +78,7 @@
     </script>
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20260526-1" />
+    <link rel="stylesheet" href="styles.css?v=20260525-3" />
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4133542156062168"
       crossorigin="anonymous"></script>
   </head>
@@ -150,7 +149,6 @@
             </div>
           </div>
         </section>
-
       </aside>
 
       <section class="main-panel">
@@ -169,10 +167,8 @@
             </div>
             <span id="activeTopicLabel" class="topic-badge">全部</span>
           </div>
-          <div id="searchSummary" class="search-summary" hidden></div>
           <div id="articleGrid" class="article-grid"></div>
           <nav id="articlePagination" class="article-pagination" aria-label="文章分頁"></nav>
-
         </section>
 
         <section id="viewIssues" class="view">
@@ -193,7 +189,6 @@
             </div>
           </div>
           <div id="peopleList" class="people-list"></div>
-          <nav id="peoplePagination" class="article-pagination people-pagination" aria-label="人物分頁"></nav>
         </section>
 
         <section id="viewTimeline" class="view">
@@ -237,16 +232,16 @@
       <a href="privacy.html">隱私權政策</a>
     </footer>
 
-    <script src="utils.js?v=20260526-2"></script>
+    <script src="utils.js?v=20260525-1"></script>
     <script src="firebase-config.js"></script>
-    <script src="firebase-bootstrap.js?v=20260520-2"></script>
-    <script src="site-seo.js?v=20260525-2"></script>
-    <script src="auth-theme.js?v=20260525-2"></script>
+    <script src="firebase-bootstrap.js?v=20260604-1"></script>
+    <script src="site-seo.js?v=20260602-2"></script>
+    <script src="auth-theme.js?v=20260604-1"></script>
     <script src="ad-safety.js?v=20260520-2"></script>
     <script src="visuals.js?v=20260520-2"></script>
     <script src="watchlist.js?v=20260520-4"></script>
-    <script src="review-mode.js?v=20260604-1"></script>
-    <script src="app.js?v=20260604-1"></script>
-    <script src="public-copy-cleanup.js?v=20260529-1"></script>
+    <script src="review-mode.js?v=20260605-1"></script>
+    <script src="app.js?v=20260605-2"></script>
+    <script src="public-copy-cleanup.js?v=20260605-2"></script>
   </body>
 </html>
