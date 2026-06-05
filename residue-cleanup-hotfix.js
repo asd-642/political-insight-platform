@@ -85,12 +85,16 @@
   }
 
   function cleanFactPair(fact, index) {
+    const label = (value) => {
+      const cleaned = clean(value).replace(/^[:：\s]+|[:：\s]+$/g, "");
+      return cleaned || `重點 ${index + 1}`;
+    };
     if (Array.isArray(fact)) {
-      return [clean(fact[0] || `重點 ${index + 1}`) || `重點 ${index + 1}`, clean(fact[1]) || "可比對公開資料"];
+      return [label(fact[0]), clean(fact[1]) || "可比對公開資料"];
     }
     if (fact && typeof fact === "object") {
       return [
-        clean(fact.label || fact.name || `重點 ${index + 1}`) || `重點 ${index + 1}`,
+        label(fact.label || fact.name),
         clean(fact.value || fact.text || fact.description) || "可比對公開資料",
       ];
     }
