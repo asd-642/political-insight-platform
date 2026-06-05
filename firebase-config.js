@@ -12,6 +12,113 @@ window.PolicyPulseFirebaseConfig = {
   },
 };
 
+(function installGoogleProfileSync() {
+  const FIRESTORE_SDK = "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+  let firestoreToolsPromise = null;
+
+  function firestoreTools() {
+    if (!firestoreToolsPromise) {
+      firestoreToolsPromise = import(FIRESTORE_SDK);
+    }
+    return firestoreToolsPromise;
+  }
+
+  function providerIdsFor(user) {
+    return [...new Set(
+      (user?.providerData || [])
+        .map((provider) => provider?.providerId)
+        .filter(Boolean),
+    )];
+  }
+
+  async function syncUserProfile(api, user, reason = "auth") {
+    if (!api?.enabled || !api.db || !user?.uid) return null;
+
+    const {
+      doc,
+      getDoc,
+      serverTimestamp,
+      setDoc,
+    } = await firestoreTools();
+    const userRef = doc(api.db, "users", user.uid);
+    let isNewUser = false;
+
+    try {
+      const snapshot = await getDoc(userRef);
+      isNewUser = !snapshot.exists();
+    } catch {
+      isNewUser = false;
+    }
+
+    const providers = providerIdsFor(user);
+    const primaryProvider = providers.includes("google.com")
+      ? "google.com"
+      : providers[0] || "unknown";
+    const payload = {
+      uid: user.uid,
+      email: user.email || "",
+      emailLower: String(user.email || "").toLowerCase(),
+      emailVerified: Boolean(user.emailVerified),
+      displayName: user.displayName || "",
+      photoURL: user.photoURL || "",
+      provider: primaryProvider,
+      providers,
+      lastAuthReason: reason,
+      lastLoginAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+
+    if (isNewUser) {
+      payload.createdAt = serverTimestamp();
+      payload.role = "user";
+      payload.watchlist = [];
+      payload.signupProvider = primaryProvider;
+    }
+
+    await setDoc(userRef, payload, { merge: true });
+    return payload;
+  }
+
+  function install(api) {
+    if (!api?.enabled || api.__googleProfileSyncInstalled) return;
+    api.__googleProfileSyncInstalled = true;
+    api.ensureUserProfile = (user = api.getCurrentUser?.(), reason = "manual") =>
+      syncUserProfile(api, user, reason);
+
+    if (typeof api.signInWithGoogle === "function") {
+      const originalSignInWithGoogle = api.signInWithGoogle.bind(api);
+      api.signInWithGoogle = async (...args) => {
+        const credential = await originalSignInWithGoogle(...args);
+        await syncUserProfile(api, credential?.user || api.getCurrentUser?.(), "google_popup").catch(() => {});
+        return credential;
+      };
+    }
+
+    if (typeof api.finishRedirectSignIn === "function") {
+      const originalFinishRedirectSignIn = api.finishRedirectSignIn.bind(api);
+      api.finishRedirectSignIn = async (...args) => {
+        const result = await originalFinishRedirectSignIn(...args);
+        await syncUserProfile(api, result?.user || api.getCurrentUser?.(), "google_redirect").catch(() => {});
+        return result;
+      };
+    }
+
+    if (typeof api.onAuthChange === "function") {
+      const originalOnAuthChange = api.onAuthChange.bind(api);
+      api.onAuthChange = (callback) => originalOnAuthChange(async (user) => {
+        if (user) await syncUserProfile(api, user, "auth_state").catch(() => {});
+        callback(user);
+      });
+    }
+
+    syncUserProfile(api, api.getCurrentUser?.(), "ready").catch(() => {});
+  }
+
+  document.addEventListener("policy-firebase-ready", () => {
+    install(window.PolicyPulseFirebase);
+  });
+})();
+
 (function loadAdminDailyBackfill() {
   const path = window.location.pathname.replace(/\/$/, "/index.html");
   const isAdminPage = path.endsWith("/admin.html") || path.endsWith("/admin");
