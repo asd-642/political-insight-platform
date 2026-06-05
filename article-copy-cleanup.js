@@ -70,6 +70,19 @@
     let text = String(value ?? "");
 
     text = text
+      .replace(/這篇草稿/g, "本文")
+      .replace(/草稿會先整理/g, "本文整理")
+      .replace(/草稿/g, "文章")
+      .replace(/方便後台審核時判斷是否需要補正式公告、議事紀錄或主管機關回應/g, "方便讀者對照正式公告、議事紀錄與主管機關回應")
+      .replace(/後台審核/g, "公開資料比對")
+      .replace(/發布前可以先確認/g, "閱讀時可以先確認")
+      .replace(/發布前/g, "閱讀時")
+      .replace(/待依來源補齊/g, "可比對公開資料")
+      .replace(/需要補齊的資料/g, "後續可比對的資料")
+      .replace(/後續需要補充的資料/g, "後續觀察方向")
+      .replace(/仍需補充的資料/g, "後續觀察方向")
+      .replace(/下一步補資料/g, "後續觀察")
+      .replace(/待審核|待核查|待查核|已發布待檢查/g, "追蹤中")
       .replace(
         /根據自動抓取來源摘要，?「([^」]+)」近期與([^。]+?)議題相關。本文先整理影響對象、主要爭點與(?:後續需要補充|仍需補充)的資料。?/g,
         (_, keyword, topic) => newsExcerpt(cleanSubject(keyword, topic)),
@@ -205,9 +218,29 @@
 
   function cleanupMetadata() {
     document.title = cleanupPublicCopy(document.title);
-    const description = document.querySelector('meta[name="description"]');
-    if (description) {
-      description.setAttribute("content", cleanupPublicCopy(description.getAttribute("content") || ""));
+    [
+      'meta[name="description"]',
+      'meta[property="og:title"]',
+      'meta[property="og:description"]',
+      'meta[name="twitter:title"]',
+      'meta[name="twitter:description"]',
+    ].forEach((selector) => {
+      const meta = document.querySelector(selector);
+      if (meta) {
+        meta.setAttribute("content", cleanupPublicCopy(meta.getAttribute("content") || ""));
+      }
+    });
+
+    const structuredData = document.querySelector("#articleStructuredData");
+    if (structuredData?.textContent) {
+      try {
+        const data = JSON.parse(structuredData.textContent);
+        if (data.headline) data.headline = cleanupPublicCopy(data.headline);
+        if (data.description) data.description = cleanupPublicCopy(data.description);
+        structuredData.textContent = JSON.stringify(data);
+      } catch (_) {
+        // Ignore malformed structured data; visible article cleanup still runs.
+      }
     }
   }
 
