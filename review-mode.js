@@ -13,7 +13,15 @@
         display: none;
       }
 
+      #timelineList > .timeline-item[hidden] {
+        display: none !important;
+      }
+
       .timeline-pagination {
+        display: flex !important;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
         margin-top: 22px;
       }
 
@@ -21,7 +29,12 @@
         flex-basis: 100%;
         color: var(--muted);
         font-size: 0.9rem;
-        margin-bottom: 8px;
+        margin-bottom: 2px;
+      }
+
+      .timeline-pagination .page-button {
+        width: auto;
+        min-width: 44px;
       }
 
       @media (min-width: 1241px) {
