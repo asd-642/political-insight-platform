@@ -17,6 +17,14 @@
     "財政",
     "預算",
   ];
+  const TAG_LABELS = {
+    budget: "財經",
+    housing: "居住",
+    energy: "能源",
+    transport: "交通",
+    labor: "勞工",
+    education: "教育",
+  };
 
   function topicFromText(value) {
     const text = String(value || "");
@@ -43,6 +51,84 @@
       .replace(/\s+([，。；：])/g, "$1")
       .replace(/\s{2,}/g, " ")
       .trim();
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function topicName(id) {
+    const topics = window.PolicyPulseContent?.topics || [];
+    return topics.find((topic) => topic.id === id)?.name || TAG_LABELS[String(id || "").toLowerCase()] || id || "政策";
+  }
+
+  function articleTitle(article) {
+    return clean(article?.title)
+      .replace(/\s*政策議題$/g, "政策")
+      .replace(/\s*追蹤議題$/g, "議題")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function articleExcerpt(article) {
+    const raw = clean(article?.summary);
+    if (raw && !/(草稿|後台審核|發布前|待依來源補齊|需要補齊|待審核|待核查|待查核|資料待查核|根據自動抓取來源摘要|內容大綱|後續影響與資料|本文先整理)/.test(raw)) {
+      return raw;
+    }
+    const topic = topicName(article?.topic) || topicFromText(articleTitle(article));
+    return newsExcerpt(topic);
+  }
+
+  function cleanFactPair(fact, index) {
+    if (Array.isArray(fact)) {
+      return [clean(fact[0] || `重點 ${index + 1}`) || `重點 ${index + 1}`, clean(fact[1]) || "可比對公開資料"];
+    }
+    if (fact && typeof fact === "object") {
+      return [
+        clean(fact.label || fact.name || `重點 ${index + 1}`) || `重點 ${index + 1}`,
+        clean(fact.value || fact.text || fact.description) || "可比對公開資料",
+      ];
+    }
+    return [`重點 ${index + 1}`, clean(fact) || "可比對公開資料"];
+  }
+
+  function renderDetailBody(article) {
+    const fallback = "後續可觀察正式資料、議事紀錄與主管機關回應。";
+    const facts = (article?.facts || []).map(cleanFactPair);
+    const support = clean(article?.support) || fallback;
+    const concern = clean(article?.concern) || fallback;
+    const next = clean(article?.next) || fallback;
+    const sources = (article?.sources || []).map(clean).filter(Boolean);
+    return `
+      <p class="detail-summary">${escapeHtml(articleExcerpt(article))}</p>
+      <section class="detail-block">
+        <h3>快速事實</h3>
+        <ul>
+          ${facts.map(([label, value]) => `<li><strong>${escapeHtml(label)}：</strong>${escapeHtml(value)}</li>`).join("")}
+        </ul>
+      </section>
+      <section class="detail-block">
+        <h3>支持方說法</h3>
+        <p>${escapeHtml(support)}</p>
+      </section>
+      <section class="detail-block">
+        <h3>疑慮與反對理由</h3>
+        <p>${escapeHtml(concern)}</p>
+      </section>
+      <section class="detail-block">
+        <h3>後續觀察</h3>
+        <p>${escapeHtml(next)}</p>
+      </section>
+      <section class="detail-block">
+        <h3>來源</h3>
+        <div>${sources.map((source) => `<span class="source-pill">${escapeHtml(source)}</span>`).join("")}</div>
+      </section>
+    `;
   }
 
   function shouldSkip(node) {
@@ -109,6 +195,7 @@
       document.querySelector(".headline-item");
     const cardTitle = clean(card?.querySelector("h3, strong")?.textContent || "");
     if (!cardTitle) return;
+    const article = (window.PolicyPulseContent?.articles || []).find((item) => articleTitle(item) === cardTitle);
 
     const detailTitle = document.querySelector("#detailTitle");
     const featuredTitle = document.querySelector("#featuredStory h1");
@@ -120,6 +207,25 @@
         element.textContent = cardTitle;
       }
     });
+
+    if (article) {
+      const title = articleTitle(article);
+      if (detailTitle && detailTitle.textContent !== title) detailTitle.textContent = title;
+      if (featuredTitle && featuredTitle.textContent !== title) featuredTitle.textContent = title;
+      const featuredSummary = document.querySelector("#featuredStory .featured-overlay p");
+      const summary = articleExcerpt(article);
+      if (featuredSummary && featuredSummary.textContent !== summary) featuredSummary.textContent = summary;
+      const detailBody = document.querySelector("#detailBody");
+      if (detailBody) {
+        const needsRewrite =
+          detailBody.dataset.hotfixArticleId !== article.id ||
+          /後續影響與資料|待查核|待核查|待審核|本文先整理|根據自動抓取來源摘要/.test(detailBody.textContent || "");
+        if (needsRewrite) {
+          detailBody.innerHTML = renderDetailBody(article);
+          detailBody.dataset.hotfixArticleId = article.id;
+        }
+      }
+    }
   }
 
   function run() {
