@@ -191,6 +191,13 @@
     }
   }
 
+  function fixBlankFactLabels(root) {
+    root.querySelectorAll("#detailBody li strong, #articleRoot li strong").forEach((strong, index) => {
+      const text = clean(strong.textContent || "").replace(/^[:：\s]+|[:：\s]+$/g, "");
+      if (!text) strong.textContent = `重點 ${index + 1}：`;
+    });
+  }
+
   function syncSelectedShell() {
     const card =
       document.querySelector(".article-card.is-selected") ||
@@ -238,6 +245,7 @@
     cleanText(root);
     cleanAttributes(root);
     cleanMetadata();
+    fixBlankFactLabels(root);
     syncSelectedShell();
   }
 
