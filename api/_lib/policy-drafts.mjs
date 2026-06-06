@@ -482,7 +482,7 @@ function articleTimeline(article) {
     date: article.updated || new Date().toISOString().slice(0, 10),
     publishedAt: article.publishedAt || new Date().toISOString(),
     topic: article.topic,
-    title: `${article.title} 餈質馱撱箇?`,
+    title: `${article.title} 發布紀錄`,
     description: article.summary,
   };
 }
