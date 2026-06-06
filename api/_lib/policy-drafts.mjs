@@ -44,44 +44,18 @@ function unique(items) {
   return [...new Set(items.filter(Boolean))];
 }
 
-function randomItem(items, random = Math.random) {
-  return items[Math.floor(random() * items.length)];
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function randomBetween(min, max) {
+  return Math.floor(min + Math.random() * Math.max(1, max - min + 1));
 }
 
 function shuffle(items) {
   const copy = [...items];
   for (let index = copy.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(Math.random() * (index + 1));
-    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
-  }
-  return copy;
-}
-
-function hashString(input) {
-  let hash = 2166136261;
-  for (const char of String(input || "")) {
-    hash ^= char.codePointAt(0);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
-function seededRandom(seedText) {
-  let seed = hashString(seedText) || 1;
-  return () => {
-    seed += 0x6D2B79F5;
-    let value = seed;
-    value = Math.imul(value ^ (value >>> 15), value | 1);
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function seededShuffle(items, seedText) {
-  const random = seededRandom(seedText);
-  const copy = [...items];
-  for (let index = copy.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
     [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
   }
   return copy;
@@ -193,7 +167,7 @@ async function fetchRecords(keyword) {
   return [{
     source: "待補來源",
     title: `${keyword} 相關政策資料待補`,
-    summary: "目前自動抓取來源不足，先建立草稿框架，後續可補正式公告、新聞來源或會議紀錄。",
+    summary: "目前自動抓取來源不足，先建立文章框架，後續可補正式公告、新聞來源或會議紀錄。",
     link: "",
   }];
 }
@@ -225,6 +199,91 @@ function findBlockedKeywords(value, blockedKeywords = []) {
     .filter((keyword) => text.includes(keyword.toLowerCase()));
 }
 
+function draftSubject(keyword, topicName) {
+  const subject = String(keyword || topicName || "政策")
+    .replace(/追蹤|待補|來源摘要|自動抓取|資料待查核|後續影響|議題整理/g, "")
+    .replace(/\s+/g, "")
+    .trim();
+  if (!subject) return `${topicName || "政策"}議題`;
+  return subject.includes("議題") ? subject : `${subject}議題`;
+}
+
+const DRAFT_TITLE_TEMPLATES = {
+  財經: [
+    (label) => `${label}預算怎麼花？執行率與補助流向待釐清`,
+    (label) => `${label}牽動支出分配，審查進度與效益受檢視`,
+    (label) => `${label}卡在財源與期程，主管機關回應成焦點`,
+  ],
+  交通: [
+    (label) => `${label}進度到哪裡？班次、補助與地方分工待釐清`,
+    (label) => `${label}牽動通勤成本，路線調整與執行期程受檢視`,
+    (label) => `${label}地方怎麼配合？預算分攤與服務量能成焦點`,
+  ],
+  居住: [
+    (label) => `${label}如何減輕負擔？供給、租金與補助門檻待查`,
+    (label) => `${label}牽動租屋族權益，地方執行與申請流程受檢視`,
+    (label) => `${label}住宅供給怎麼補？財源配置與審核進度成焦點`,
+  ],
+  能源: [
+    (label) => `${label}能否穩定供電？電網進度與採購資訊待釐清`,
+    (label) => `${label}牽動區域用電，工程期程與事故紀錄受檢視`,
+    (label) => `${label}容量夠不夠？成本、備援與公開資料待補`,
+  ],
+  勞工: [
+    (label) => `${label}影響誰的薪資？企業成本與保障範圍待釐清`,
+    (label) => `${label}進入勞資攻防，工時、職安與執法量能成焦點`,
+    (label) => `${label}能否落實保障？稽查紀錄與申訴資料待補`,
+  ],
+  教育: [
+    (label) => `${label}資源怎麼分？校園需求與採購進度待釐清`,
+    (label) => `${label}牽動學生權益，補助門檻與地方執行受檢視`,
+    (label) => `${label}能否改善現場？經費流向與成效資料待補`,
+  ],
+  政策: [
+    (label) => `${label}下一步怎麼走？主管機關說明與期程待釐清`,
+    (label) => `${label}爭議升溫，影響範圍與配套措施成焦點`,
+    (label) => `${label}進入執行檢驗，公開資料與責任分工待補`,
+  ],
+};
+
+function draftLabel(keyword, topicName) {
+  const subject = draftSubject(keyword, topicName)
+    .replace(/(?:政策)?議題$/g, "")
+    .replace(/政策$/g, "")
+    .trim();
+  return subject || String(topicName || "政策").replace(/政策$/g, "") || "政策";
+}
+
+function inferDraftTopic(keyword, topicName) {
+  const text = `${keyword || ""} ${topicName || ""}`;
+  if (/稅|財政|投資|產業|財經|預算|補助/.test(text)) return "財經";
+  if (/交通|公車|道路|通勤|月票|捷運|鐵路/.test(text)) return "交通";
+  if (/住宅|居住|租屋|房租|社宅/.test(text)) return "居住";
+  if (/能源|供電|電網|停電|儲能|電價/.test(text)) return "能源";
+  if (/勞工|勞動|薪資|最低工資|職安|工時/.test(text)) return "勞工";
+  if (/教育|學校|校園|大學|技職|學費/.test(text)) return "教育";
+  return "政策";
+}
+
+function stableTitleIndex(value, size) {
+  let hash = 0;
+  String(value || "").split("").forEach((char) => {
+    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  });
+  return size ? hash % size : 0;
+}
+
+function draftTitle(keyword, topicName) {
+  const label = draftLabel(keyword, topicName);
+  const topic = inferDraftTopic(keyword, topicName);
+  const templates = DRAFT_TITLE_TEMPLATES[topic] || DRAFT_TITLE_TEMPLATES["政策"];
+  return templates[stableTitleIndex(`${keyword}:${topicName}`, templates.length)](label);
+}
+
+function draftSummary(keyword, topicName) {
+  return `${draftSubject(keyword, topicName)}先整理政策背景、影響對象、各方說法與執行進度，後續再比對正式公告、議事紀錄與主管機關回應。`;
+}
+
 async function readKeywordBlacklist() {
   try {
     const policy = await getDocument("settings", "contentPolicy");
@@ -242,15 +301,15 @@ function buildSections({ keyword, topicName, records, support, concern, next }) 
     {
       heading: "事件背景",
       paragraphs: [
-        `這篇草稿聚焦「${keyword}」，先把近期來源中的相關標題與摘要整理成 ${topicName} 議題脈絡。它不是直接複製新聞，而是把可追蹤的政策問題、影響對象與後續資料缺口先整理出來。`,
-        `目前抓到的來源包括：${sourceList}。系統會保留來源標記，方便後台審核時判斷是否需要補正式公告、議事紀錄或主管機關回應。`,
+        `這篇文章聚焦「${keyword}」，先把近期來源中的相關標題與摘要整理成 ${topicName} 議題脈絡。它不是直接複製新聞，而是把可追蹤的政策問題、影響對象與後續資料缺口先整理出來。`,
+        `目前抓到的來源包括：${sourceList}。系統會保留來源標記，方便後台檢查時判斷是否需要補正式公告、議事紀錄或主管機關回應。`,
       ],
     },
     {
       heading: "目前來源提到什麼",
       paragraphs: [
         headlines || `目前和「${keyword}」直接相關的公開來源還不足，這篇先建立文章骨架，等待後續補資料。`,
-        "來源摘要通常只呈現事件表層，因此草稿會把標題、摘要與關鍵字拆成待查核問題，而不是直接把外部報導當成完整結論。",
+        "來源摘要通常只呈現事件表層，因此文章會把標題、摘要與關鍵字拆成待查核問題，而不是直接把外部報導當成完整結論。",
       ],
     },
     {
@@ -282,9 +341,9 @@ function buildSections({ keyword, topicName, records, support, concern, next }) 
       ],
     },
     {
-      heading: "審核時建議檢查",
+      heading: "檢查時建議確認",
       paragraphs: [
-        "發布前可以先確認標題是否過度下判斷、摘要是否把未證實內容寫成事實、來源是否足以支撐文章，以及分類是否正確。",
+        "發布後請回頭確認標題是否過度下判斷、摘要是否把未證實內容寫成事實、來源是否足以支撐文章，以及分類是否正確。",
         "若文章涉及具名人物或機關責任，應優先補上正式來源或公開紀錄，並避免加入未查證的指控性描述。",
       ],
     },
@@ -311,14 +370,14 @@ function buildDraft({ keyword, topic, config, records, person = null }) {
     id,
     topic,
     topicName,
-    title: `${keyword}議題整理，後續影響與資料待查核`,
-    status: "待審核",
+    title: draftTitle(keyword, topicName),
+    status: "已發布待檢查",
     updated: date,
     image: "",
     imageMode: "generated",
     imagePrompt: `${topicName} policy newsroom cover about ${keyword}`,
     caption: `${topicName}議題示意圖。本站以公開資料與後續追蹤整理政策脈絡。`,
-    summary: `根據自動抓取來源摘要，「${keyword}」近期與${topicName}議題相關。本文先整理影響對象、主要爭點與後續需要補充的資料。`,
+    summary: draftSummary(keyword, topicName),
     facts: [
       ["影響對象", person?.area ? `${person.area}、相關主管機關與民眾` : "待依來源補齊"],
       ["核心爭點", `${keyword}相關政策影響與各方主張`],
@@ -349,7 +408,7 @@ function buildDraft({ keyword, topic, config, records, person = null }) {
       "確認圖片來源或使用自動生成示意圖",
     ],
     sections: buildSections({ keyword, topicName, records, support, concern, next }),
-    published: false,
+    published: true,
     createdAt: now,
     updatedAt: now,
     createdAtIso: now,
@@ -375,27 +434,26 @@ function buildTopicPicks(config, count) {
   return picks;
 }
 
-function topicForPerson(person, config, random = Math.random) {
+function topicForPerson(person, config) {
   const hints = Array.isArray(person.topicHints) ? person.topicHints.filter((topic) => config.topicKeywords?.[topic]) : [];
-  if (hints.length) return randomItem(hints, random);
+  if (hints.length) return randomItem(hints);
   return Object.keys(config.topicKeywords || {})[0] || "budget";
 }
 
-function keywordForPerson(person, topic, config, random = Math.random) {
+function keywordForPerson(person, topic, config) {
   const topicName = config.topicNames?.[topic] || topic;
   const focusParts = String(person.focus || topicName).split(/[,，、]/).map((item) => item.trim()).filter(Boolean);
-  const focus = randomItem(focusParts.length ? focusParts : [topicName], random);
+  const focus = randomItem(focusParts.length ? focusParts : [topicName]);
   return randomItem([
     `${person.name} ${focus}`,
     `${person.area} ${focus}`,
     `${person.role} ${person.name}`,
     `${person.area} ${topicName} 政策`,
     `${person.name} ${topicName} 追蹤`,
-  ], random);
+  ]);
 }
 
 function buildPersonPicks(config) {
-  const runDate = taipeiDate();
   const settings = config.personRegionDrafts || {};
   const minDrafts = Math.max(1, Number(settings.minDraftsPerArea || 2) || 2);
   const maxDrafts = Math.max(minDrafts, Number(settings.maxDraftsPerArea || 4) || 4);
@@ -403,20 +461,45 @@ function buildPersonPicks(config) {
   const byArea = groupBy(people, (person) => person.area);
 
   return Object.entries(byArea).flatMap(([area, areaPeople]) => {
-    const areaRandom = seededRandom(`${runDate}:${area}:count`);
-    const count = Math.floor(minDrafts + areaRandom() * Math.max(1, maxDrafts - minDrafts + 1));
-    const selected = seededShuffle(areaPeople, `${runDate}:${area}:people`).slice(0, Math.min(count, areaPeople.length));
+    const count = randomBetween(minDrafts, maxDrafts);
+    const selected = shuffle(areaPeople).slice(0, Math.min(count, areaPeople.length));
     while (selected.length < count && areaPeople.length) selected.push(randomItem(areaPeople));
-    return selected.map((person, index) => {
-      const personRandom = seededRandom(`${runDate}:${area}:${person.id}:${index}`);
-      const topic = topicForPerson(person, config, personRandom);
+    return selected.map((person) => {
+      const topic = topicForPerson(person, config);
       return {
         topic,
-        keyword: keywordForPerson(person, topic, config, personRandom),
+        keyword: keywordForPerson(person, topic, config),
         person: { ...person, area },
       };
     });
   });
+}
+
+function articleTimeline(article) {
+  return {
+    id: `timeline-${article.id}`,
+    articleId: article.id,
+    date: article.updated || new Date().toISOString().slice(0, 10),
+    publishedAt: article.publishedAt || new Date().toISOString(),
+    topic: article.topic,
+    title: `${article.title} 餈質馱撱箇?`,
+    description: article.summary,
+  };
+}
+
+function markPublishedForReview(draft) {
+  const publishedAt = new Date().toISOString();
+  return {
+    ...draft,
+    published: true,
+    status: "已發布待檢查",
+    reviewStatus: "needsReview",
+    publishedBeforeReview: true,
+    publishedAt,
+    reviewedAt: "",
+    updated: draft.updated || publishedAt.slice(0, 10),
+    updatedAt: publishedAt,
+  };
 }
 
 async function mapWithConcurrency(items, limit, mapper) {
@@ -443,8 +526,10 @@ async function createDraftFromPick(pick, config, blockedKeywords) {
   if (await documentExists("articles", draft.id)) {
     return { skipped: true, reason: "alreadyPublished", pick, draft };
   }
-  await setDocument("drafts", draft.id, draft);
-  return { created: true, pick, draft };
+  const article = markPublishedForReview(draft);
+  await setDocument("articles", article.id, article);
+  await setDocument("timeline", `timeline-${article.id}`, articleTimeline(article));
+  return { created: true, publishedBeforeReview: true, pick, draft: article };
 }
 
 async function writeRunReport(result, extra = {}) {
@@ -482,6 +567,8 @@ export async function runDailyDrafts() {
     title: item.draft.title,
     topic: item.draft.topic,
     type: item.pick.type,
+    publishedBeforeReview: Boolean(item.publishedBeforeReview || item.draft?.publishedBeforeReview),
+    reviewStatus: item.draft.reviewStatus || "",
   }));
   const skipped = results.filter((item) => item.skipped).map((item) => ({
     id: item.draft.id,
