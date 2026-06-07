@@ -211,8 +211,12 @@ function draftSubject(keyword, topicName) {
 const DRAFT_TITLE_TEMPLATES = {
   財經: [
     (label) => `${label}預算怎麼花？執行率與補助流向待釐清`,
-    (label) => `${label}牽動支出分配，審查進度與效益受檢視`,
+    (label) => `${label}支出怎麼分？審查進度與效益受檢視`,
     (label) => `${label}卡在財源與期程，主管機關回應成焦點`,
+    (label) => `${label}明細待攤開，執行率與受益對象需說清`,
+    (label) => `${label}爭議延燒，經費來源與責任分工待釐清`,
+    (label) => `${label}錢從哪裡來？財源、期程與成效指標待補`,
+    (label) => `${label}執行卡在哪？預算流向與主管說法待說明`,
   ],
   交通: [
     (label) => `${label}進度到哪裡？班次、補助與地方分工待釐清`,
@@ -246,12 +250,36 @@ const DRAFT_TITLE_TEMPLATES = {
   ],
 };
 
+function fallbackDraftLabel(value) {
+  const text = String(value || "");
+  if (/稅/.test(text)) return "稅務政策";
+  if (/財政/.test(text)) return "財政政策";
+  if (/投資/.test(text)) return "投資政策";
+  if (/產業/.test(text)) return "產業政策";
+  if (/公車/.test(text)) return "公車服務";
+  if (/交通/.test(text)) return "交通政策";
+  if (/道路/.test(text)) return "道路建設";
+  if (/供電/.test(text)) return "供電穩定";
+  if (/能源/.test(text)) return "能源政策";
+  if (/住宅|居住/.test(text)) return "住宅政策";
+  if (/租屋/.test(text)) return "租屋市場";
+  if (/勞工|勞動/.test(text)) return "勞動政策";
+  if (/教育|校園/.test(text)) return "教育政策";
+  return "";
+}
+
 function draftLabel(keyword, topicName) {
+  const raw = `${keyword || ""} ${topicName || ""}`;
+  const fallback = fallbackDraftLabel(raw);
   const subject = draftSubject(keyword, topicName)
     .replace(/(?:政策)?議題$/g, "")
     .replace(/政策$/g, "")
+    .replace(/(?:財政|財經|交通|能源|教育|勞工|勞政|產業|住宅|居住)?(?:委員|議員|民代|代表)/g, "")
+    .replace(/^(?!北部|中部|南部|東部|全台|台灣)[\u4e00-\u9fff]{2,4}(?=(稅|財政|財經|投資|產業|交通|公車|道路|能源|供電|住宅|居住|租屋|勞工|勞動|最低工資|教育|校園))/u, "")
     .trim();
-  return subject || String(topicName || "政策").replace(/政策$/g, "") || "政策";
+  if (!subject || subject === "政策") return fallback || String(topicName || "政策").replace(/政策$/g, "") || "政策";
+  if (/^[\u4e00-\u9fff]{2,4}$/.test(subject) && fallback) return fallback;
+  return fallback || subject || String(topicName || "政策").replace(/政策$/g, "") || "政策";
 }
 
 function inferDraftTopic(keyword, topicName) {
@@ -266,9 +294,10 @@ function inferDraftTopic(keyword, topicName) {
 }
 
 function stableTitleIndex(value, size) {
-  let hash = 0;
-  String(value || "").split("").forEach((char) => {
-    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  let hash = 2166136261;
+  String(value || "").split("").forEach((char, index) => {
+    hash ^= char.charCodeAt(0) + index;
+    hash = Math.imul(hash, 16777619) >>> 0;
   });
   return size ? hash % size : 0;
 }
