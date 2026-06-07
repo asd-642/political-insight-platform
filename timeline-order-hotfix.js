@@ -1,6 +1,9 @@
 (function installTimelineOrderHotfix() {
   const LIST_SELECTOR = "#timelineList";
   const ROW_SELECTOR = ".timeline-item";
+  const RETRY_DELAYS = [0, 50, 150, 400, 900, 1600];
+  let observer = null;
+  let timer = 0;
 
   function parseDate(row) {
     const value = row.querySelector("time")?.textContent?.trim() || "";
@@ -34,17 +37,30 @@
   }
 
   function scheduleSort() {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(sortTimelineRows, 0);
     window.requestAnimationFrame(sortTimelineRows);
+  }
+
+  function scheduleRetrySorts() {
+    RETRY_DELAYS.forEach((delay) => {
+      window.setTimeout(sortTimelineRows, delay);
+    });
   }
 
   function start() {
     const list = document.querySelector(LIST_SELECTOR);
     if (list) {
-      const observer = new MutationObserver(scheduleSort);
+      observer = new MutationObserver(scheduleSort);
       observer.observe(list, { childList: true });
     }
-    document.addEventListener("click", scheduleSort);
-    scheduleSort();
+    document.addEventListener("click", scheduleRetrySorts, true);
+    window.PolicyPulseTimelineOrderHotfix = {
+      sort: sortTimelineRows,
+      schedule: scheduleRetrySorts,
+      observer,
+    };
+    scheduleRetrySorts();
   }
 
   if (document.readyState === "loading") {
