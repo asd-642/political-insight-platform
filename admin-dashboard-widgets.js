@@ -32,19 +32,17 @@
     const style = document.createElement("style");
     style.id = "adminDashboardWidgetStyles";
     style.textContent = `
-      .traffic-chart{display:block;min-height:190px;padding:10px 8px 4px}
-      .traffic-line-chart{display:grid;grid-template-rows:142px auto;gap:10px}
-      .traffic-line-chart svg{width:100%;height:142px;overflow:visible}
+      .traffic-chart{display:block;min-height:360px;padding:18px 12px 12px}
+      .traffic-line-chart{display:block}
+      .traffic-line-stage{position:relative;display:grid;grid-template-rows:auto 34px;gap:8px;min-height:0}
+      .traffic-line-chart svg{display:block;width:100%;height:auto;min-height:230px;overflow:visible}
       .traffic-line-grid{stroke:rgba(148,163,184,.22);stroke-width:1}
       .traffic-line-area{fill:rgba(8,122,109,.16)}
-      .traffic-line-path{fill:none;stroke:#2dd4bf;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+      .traffic-line-path{fill:none;stroke:#2dd4bf;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
       .traffic-line-point{fill:#2dd4bf;stroke:var(--panel, #fffdf8);stroke-width:3}
-      .traffic-line-value{fill:var(--ink, #101820);font-size:13px;font-weight:900;text-anchor:middle}
-      .traffic-line-labels{display:grid;grid-template-columns:repeat(var(--traffic-columns,7),minmax(0,1fr));gap:6px}
-      .traffic-line-label{display:grid;gap:2px;min-width:0;text-align:center}
-      .traffic-line-label strong{font-size:14px;color:var(--ink, #101820)}
-      .traffic-line-label small{font-size:12px;color:var(--muted, #52606d);white-space:nowrap}
-      .traffic-line-label.is-quiet strong,.traffic-line-label.is-quiet small{visibility:hidden}
+      .traffic-line-value{fill:var(--ink, #101820);font-size:15px;font-weight:900;text-anchor:middle}
+      .traffic-line-axis{position:relative;min-height:34px;pointer-events:none}
+      .traffic-line-label{position:absolute;top:0;left:clamp(34px,var(--x),calc(100% - 34px));width:68px;transform:translateX(-50%);color:var(--muted, #52606d);font-size:12px;font-weight:800;line-height:1.2;text-align:center;white-space:nowrap}
       .topic-chart-shell{display:grid;grid-template-columns:minmax(116px,150px) minmax(0,360px);gap:18px;align-items:center;justify-content:start}
       .topic-donut{width:140px;max-width:100%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;background:rgba(8,122,109,.12)}
       .topic-donut::after{content:"";position:absolute;inset:24%;border-radius:50%;background:var(--panel, #fffdf8)}
@@ -68,7 +66,7 @@
       .draft-collapse-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-top:1px solid var(--line)}
       .draft-collapse-actions[hidden]{display:none}
       .draft-collapse-actions span{color:var(--muted, #52606d);font-size:13px;font-weight:800}
-      @media (max-width:720px){.traffic-chart{padding-inline:0}.topic-chart-shell{grid-template-columns:1fr}.draft-collapse-actions{align-items:stretch;flex-direction:column}.activity-heatmap{grid-template-columns:30px repeat(12,minmax(12px,1fr))}.activity-heatmap .heatmap-hour:nth-of-type(n+14),.activity-heatmap .heatmap-cell:nth-child(2n){display:none}}
+      @media (max-width:720px){.traffic-chart{padding-inline:0;overflow-x:auto}.traffic-line-chart{min-width:760px}.topic-chart-shell{grid-template-columns:1fr}.draft-collapse-actions{align-items:stretch;flex-direction:column}.activity-heatmap{grid-template-columns:30px repeat(12,minmax(12px,1fr))}.activity-heatmap .heatmap-hour:nth-of-type(n+14),.activity-heatmap .heatmap-cell:nth-child(2n){display:none}}
     `;
     document.head.append(style);
   }
@@ -314,45 +312,54 @@
       if (bucket) bucket.count += 1;
     });
     const max = Math.max(1, ...buckets.map((bucket) => bucket.count));
-    const width = 700;
-    const height = 132;
-    const padX = 18;
-    const padY = 18;
+    const width = 1000;
+    const height = 230;
+    const padX = 46;
+    const padTop = 30;
+    const padBottom = 28;
     const usableWidth = width - padX * 2;
-    const usableHeight = height - padY * 2;
+    const usableHeight = height - padTop - padBottom;
     const points = buckets.map((bucket, index) => {
       const x = padX + (usableWidth / Math.max(1, buckets.length - 1)) * index;
-      const y = height - padY - (bucket.count / max) * usableHeight;
-      return { ...bucket, x, y };
+      const y = height - padBottom - (bucket.count / max) * usableHeight;
+      return { ...bucket, x, y, xPercent: (x / width) * 100 };
     });
     const linePath = points.map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
-    const areaPath = `${linePath} L${points.at(-1).x.toFixed(1)} ${height - padY} L${points[0].x.toFixed(1)} ${height - padY} Z`;
+    const areaPath = `${linePath} L${points.at(-1).x.toFixed(1)} ${height - padBottom} L${points[0].x.toFixed(1)} ${height - padBottom} Z`;
     const gridRows = [0, 1, 2, 3].map((row) => {
-      const y = padY + (usableHeight / 3) * row;
+      const y = padTop + (usableHeight / 3) * row;
       return `<line class="traffic-line-grid" x1="${padX}" y1="${y.toFixed(1)}" x2="${width - padX}" y2="${y.toFixed(1)}"></line>`;
     });
     chart.innerHTML = `
       <div class="traffic-line-chart">
-        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${config.aria}">
-          ${gridRows.join("")}
-          <path class="traffic-line-area" d="${areaPath}"></path>
-          <path class="traffic-line-path" d="${linePath}"></path>
-          ${points
-            .map((point) => `
-              <circle class="traffic-line-point" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="5"></circle>
-              <text class="traffic-line-value" x="${point.x.toFixed(1)}" y="${Math.max(12, point.y - 10).toFixed(1)}">${point.count}</text>
-            `)
-            .join("")}
-        </svg>
-        <div class="traffic-line-labels" style="--traffic-columns:${points.length}">
-          ${points
-            .map((point) => `
-              <div class="traffic-line-label ${point.showLabel ? "" : "is-quiet"}" title="${escapeHtml(point.title)}，${trafficRangeLabel(config.range)} ${point.count} 筆事件">
-                <strong>${point.showLabel ? point.count : ""}</strong>
-                <small>${point.showLabel ? escapeHtml(point.label) : ""}</small>
-              </div>
-            `)
-            .join("")}
+        <div class="traffic-line-stage">
+          <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${config.aria}">
+            ${gridRows.join("")}
+            <path class="traffic-line-area" d="${areaPath}"></path>
+            <path class="traffic-line-path" d="${linePath}"></path>
+            ${points
+              .map((point) => `
+                <circle class="traffic-line-point" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="${point.count > 0 ? 6 : 4}">
+                  <title>${escapeHtml(point.title)}，${trafficRangeLabel(config.range)} ${point.count} 筆事件</title>
+                </circle>
+                ${
+                  point.count > 0
+                    ? `<text class="traffic-line-value" x="${point.x.toFixed(1)}" y="${Math.max(18, point.y - 14).toFixed(1)}">${point.count}</text>`
+                    : ""
+                }
+              `)
+              .join("")}
+          </svg>
+          <div class="traffic-line-axis" aria-hidden="true">
+            ${points
+              .filter((point) => point.showLabel)
+              .map((point) => `
+                <div class="traffic-line-label" style="--x:${point.xPercent.toFixed(2)}%" title="${escapeHtml(point.title)}，${trafficRangeLabel(config.range)} ${point.count} 筆事件">
+                  ${escapeHtml(point.label)}
+                </div>
+              `)
+              .join("")}
+          </div>
         </div>
       </div>
     `;
