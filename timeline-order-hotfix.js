@@ -81,7 +81,26 @@
       updatedAt,
       createdAtIso,
       updated: data.updated || dateKey(publishedAt || reviewedAt || updatedAt || createdAtIso),
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      sources: Array.isArray(data.sources) ? data.sources : [],
     };
+  }
+
+  function mergeArticles(base = [], extra = []) {
+    const extraArticles = extra.filter((article) => article?.id && article.published !== false);
+    const extraIds = new Set(extraArticles.map((article) => article.id));
+    const extraDays = new Set(extraArticles.map((article) => dateKey(articleDateValue(article), article.updated || "")).filter(Boolean));
+    const baseArticles = base.filter((article) => {
+      if (!article?.id || article.published === false) return false;
+      const day = dateKey(articleDateValue(article), article.updated || "");
+      return !extraDays.has(day) || extraIds.has(article.id);
+    });
+    const merged = new Map();
+    extraArticles.forEach((article) => merged.set(article.id, article));
+    baseArticles.forEach((article) => {
+      if (!merged.has(article.id)) merged.set(article.id, article);
+    });
+    return [...merged.values()].sort((a, b) => articleTime(b) - articleTime(a) || String(b.id || "").localeCompare(String(a.id || "")));
   }
 
   function buildOfficialIndex(articles) {
@@ -104,35 +123,88 @@
       const completeSnapshot = await firestore.getDocs(articlesRef);
       if (completeSnapshot?.docs?.length) return completeSnapshot;
     } catch {
-      // Fall back to indexed queries if the project rules ever block a full collection read.
+      // Fall back to indexed queries if rules ever block a full collection read.
     }
     const attempts = [
-      firestore.query(
-        articlesRef,
-        firestore.where("published", "==", true),
-        firestore.orderBy("publishedAt", "desc"),
-        firestore.limit(500),
-      ),
-      firestore.query(
-        articlesRef,
-        firestore.orderBy("publishedAt", "desc"),
-        firestore.limit(500),
-      ),
-      firestore.query(
-        articlesRef,
-        firestore.where("published", "==", true),
-        firestore.limit(500),
-      ),
+      firestore.query(articlesRef, firestore.where("published", "==", true), firestore.orderBy("publishedAt", "desc"), firestore.limit(500)),
+      firestore.query(articlesRef, firestore.orderBy("publishedAt", "desc"), firestore.limit(500)),
+      firestore.query(articlesRef, firestore.where("published", "==", true), firestore.limit(500)),
     ];
     for (const query of attempts) {
       try {
         const snapshot = await firestore.getDocs(query);
         if (snapshot?.docs?.length) return snapshot;
       } catch {
-        // Try the next supported query shape. Some projects may not have the composite index yet.
+        // Try the next supported query shape.
       }
     }
     return { docs: [] };
+  }
+
+  function articleTimeline(article, existing = {}) {
+    const dateValue = articleDateValue(article);
+    return {
+      ...existing,
+      id: `timeline-${article.id}`,
+      articleId: article.id,
+      date: dateKey(dateValue, article.updated || ""),
+      publishedAt: isoValue(dateValue) || existing.publishedAt || "",
+      topic: article.topic,
+      title: cleanText(article.title || existing.title || "文章更新"),
+      description: cleanText(existing.description || article.summary || article.excerpt || ""),
+    };
+  }
+
+  function mergeTimeline(existingTimeline = [], articles = []) {
+    const byArticleId = new Map();
+    const officialDays = new Set(articles.map((article) => dateKey(articleDateValue(article), article.updated || "")).filter(Boolean));
+    existingTimeline.forEach((item) => {
+      const articleId = item.articleId || String(item.id || "").replace(/^timeline-/, "");
+      const itemDate = dateKey(item.publishedAt || item.date || "", item.date || "");
+      if (officialDays.has(itemDate)) return;
+      if (articleId) byArticleId.set(articleId, item);
+    });
+    articles.forEach((article) => {
+      if (article?.id) byArticleId.set(article.id, articleTimeline(article, byArticleId.get(article.id)));
+    });
+    return [...byArticleId.values()].sort((a, b) => {
+      const bTime = Date.parse(b.publishedAt || b.date || "");
+      const aTime = Date.parse(a.publishedAt || a.date || "");
+      return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+    });
+  }
+
+  async function loadFullPublishedContent(api, fallback) {
+    const snapshot = await getLatestArticles(api);
+    const articles = snapshot.docs
+      .map(normalizeArticle)
+      .filter((article) => article.published !== false)
+      .sort((a, b) => articleTime(b) - articleTime(a));
+    if (!articles.length && fallback) return fallback();
+
+    let timeline = [];
+    try {
+      const firestore = await import(FIRESTORE_URL);
+      const timelineSnapshot = await firestore.getDocs(firestore.collection(api.db, "timeline"));
+      timeline = timelineSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    } catch {
+      timeline = [];
+    }
+    return { articles, timeline: mergeTimeline(timeline, articles) };
+  }
+
+  function installApiOverride() {
+    const ready = window.PolicyPulseFirebaseReady;
+    if (!ready?.then || ready.__fullContentHotfix) return;
+    const patched = ready.then((api) => {
+      if (!api?.enabled || !api.db || api.__fullPublishedContentHotfix) return api;
+      const fallback = api.loadPublishedContent?.bind(api);
+      api.loadPublishedContent = () => loadFullPublishedContent(api, fallback);
+      api.__fullPublishedContentHotfix = true;
+      return api;
+    });
+    patched.__fullContentHotfix = true;
+    window.PolicyPulseFirebaseReady = patched;
   }
 
   function rowDate(row) {
@@ -208,7 +280,6 @@
   function pruneAndSortRows() {
     const list = document.querySelector(LIST_SELECTOR);
     if (!list || list.dataset.sortingTimeline === "true") return;
-
     list.dataset.sortingTimeline = "true";
     try {
       rebuildOfficialDayRows(list);
@@ -218,7 +289,6 @@
         const officialTitles = officialTitlesByDate.get(day);
         if (officialTitles?.size && row.dataset.officialTimeline !== "true" && !officialTitles.has(rowTitle(row))) row.remove();
       });
-
       const rows = Array.from(list.querySelectorAll(`:scope > ${ROW_SELECTOR}`));
       if (rows.length < 2) return;
       const sorted = [...rows].sort((a, b) => rowTime(b) - rowTime(a) || rowTitle(b).localeCompare(rowTitle(a), "zh-Hant"));
@@ -231,14 +301,17 @@
   async function refreshOfficialRows() {
     const api = await window.PolicyPulseFirebaseReady;
     if (!api?.enabled || !api.db) return false;
-    const snapshot = await getLatestArticles(api);
-    const articles = snapshot.docs
-      .map(normalizeArticle)
-      .filter((article) => article.published !== false)
-      .sort((a, b) => articleTime(b) - articleTime(a));
+    const content = await loadFullPublishedContent(api, null);
+    const articles = content.articles || [];
     if (!articles.length) return false;
 
     buildOfficialIndex(articles);
+    const publicContent = window.PolicyPulseContent;
+    if (publicContent) {
+      publicContent.articles = mergeArticles(publicContent.articles || [], articles);
+      publicContent.timeline = mergeTimeline(publicContent.timeline || [], articles);
+      if (typeof window.render === "function") window.render();
+    }
     window.PolicyPulseTimelineOrderHotfix = {
       loaded: true,
       articleCount: articles.length,
@@ -258,6 +331,7 @@
   }
 
   function start() {
+    installApiOverride();
     const list = document.querySelector(LIST_SELECTOR);
     if (list) new MutationObserver(scheduleClean).observe(list, { childList: true });
     document.addEventListener("click", () => RETRY_DELAYS.forEach((delay) => window.setTimeout(pruneAndSortRows, delay)), true);
