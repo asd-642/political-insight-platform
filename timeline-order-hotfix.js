@@ -84,6 +84,7 @@
 
   function cleanReviewCopy(value) {
     return String(value || "")
+      .replace(/\s*發布紀錄$/g, "")
       .replaceAll("待審草稿", "已發布待檢查文章")
       .replaceAll("草稿審核", "發布後檢查")
       .replaceAll("確認發布 ", "標記已檢查")
@@ -224,6 +225,14 @@
     });
   }
 
+  function scheduleRetryRefreshes() {
+    [0, 500, 1500, 3500, 7000].forEach((delay) => {
+      window.setTimeout(() => {
+        refreshLatestContent().catch(() => {});
+      }, delay);
+    });
+  }
+
   function start() {
     const list = document.querySelector(LIST_SELECTOR);
     if (list) {
@@ -238,7 +247,7 @@
       observer,
     };
     scheduleRetrySorts();
-    refreshLatestContent().catch(() => {});
+    scheduleRetryRefreshes();
   }
 
   if (document.readyState === "loading") {
