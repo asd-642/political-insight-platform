@@ -173,7 +173,7 @@
 
     const content = window.PolicyPulseContent;
     content.articles = mergeArticles(content.articles || [], incoming);
-    content.timeline = mergeTimeline(content.timeline || [], content.articles);
+    content.timeline = mergeTimeline(content.timeline || [], incoming);
     window.PolicyPulseTimelineLatestHotfix = {
       loaded: true,
       articleCount: incoming.length,
