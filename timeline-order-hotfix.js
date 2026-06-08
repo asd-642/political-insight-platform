@@ -100,28 +100,34 @@
   async function getLatestArticles(api) {
     const firestore = await import(FIRESTORE_URL);
     const articlesRef = firestore.collection(api.db, "articles");
+    try {
+      const completeSnapshot = await firestore.getDocs(articlesRef);
+      if (completeSnapshot?.docs?.length) return completeSnapshot;
+    } catch {
+      // Fall back to indexed queries if the project rules ever block a full collection read.
+    }
     const attempts = [
       firestore.query(
         articlesRef,
         firestore.where("published", "==", true),
         firestore.orderBy("publishedAt", "desc"),
-        firestore.limit(240),
+        firestore.limit(500),
       ),
       firestore.query(
         articlesRef,
         firestore.orderBy("publishedAt", "desc"),
-        firestore.limit(240),
+        firestore.limit(500),
       ),
       firestore.query(
         articlesRef,
         firestore.where("published", "==", true),
-        firestore.limit(240),
+        firestore.limit(500),
       ),
-      articlesRef,
     ];
     for (const query of attempts) {
       try {
-        return await firestore.getDocs(query);
+        const snapshot = await firestore.getDocs(query);
+        if (snapshot?.docs?.length) return snapshot;
       } catch {
         // Try the next supported query shape. Some projects may not have the composite index yet.
       }
