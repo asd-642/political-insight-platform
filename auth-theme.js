@@ -196,9 +196,14 @@ function currentPageKind() {
 function eventContext() {
   const host = referrerHost();
   const store = sessionStore();
+  const hostname = location.hostname || "";
+  const isLocalPreview = isLocalDevelopmentHost();
   return {
     visitorId: readOrCreateVisitorId(),
     visitSessionId: readOrCreateVisitSessionId(),
+    host: hostname,
+    environment: isLocalPreview ? "local" : "production",
+    isLocalPreview,
     source: trafficSourceFromReferrer(host),
     referrerHost: host,
     browser: browserName(),
@@ -447,7 +452,7 @@ function updateAccountUi() {
     <div class="account-settings-panel" data-account-settings hidden>
       <div>
         <strong>顯示模式</strong>
-        <span>讓後台與網站一起切換暗色或亮色。</span>
+        <span>讓後台與網站一赛切換暗色或亮色。</span>
       </div>
       <button class="account-setting-button" data-account-action="account-theme" type="button">
         <span data-theme-label>${themeLabel}</span>
