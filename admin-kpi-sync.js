@@ -1,6 +1,7 @@
 (function installAdminKpiSync() {
   const FIRESTORE_URL = "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
   const hourMs = 60 * 60 * 1000;
+  window.PolicyPulseAdminKpiSyncUsesArticles = true;
   const state = {
     articles: [],
     articlesLoaded: false,
@@ -17,6 +18,8 @@
     uncategorized: "未分類",
   };
   const topicPalette = ["#2dd4bf", "#f4b942", "#7bb4ff", "#ef6a62", "#9b6dff", "#e97b45", "#67e8f9"];
+  let topicGuardTimer = 0;
+  let renderingArticleTopic = false;
 
   function escapeHtml(value = "") {
     return String(value)
@@ -257,6 +260,7 @@
     const donut = document.querySelector("#topicDonut");
     const legend = document.querySelector("#topicLegend");
     if (!donut || !legend) return;
+    renderingArticleTopic = true;
     const counts = new Map();
     articles.forEach((article) => {
       const topic = topicForArticle(article);
@@ -268,6 +272,9 @@
       donut.style.background = "";
       donut.innerHTML = '<div class="donut-center"><strong>0</strong><span>文章</span></div>';
       legend.innerHTML = '<div class="insight-empty">目前沒有可統計的公開文章。</div>';
+      window.setTimeout(() => {
+        renderingArticleTopic = false;
+      }, 0);
       return;
     }
     let cursor = 0;
@@ -291,6 +298,28 @@
         `;
       })
       .join("");
+    window.setTimeout(() => {
+      renderingArticleTopic = false;
+    }, 0);
+  }
+
+  function scheduleTopicGuard(delay = 80) {
+    window.clearTimeout(topicGuardTimer);
+    topicGuardTimer = window.setTimeout(() => {
+      if (state.articles.length) renderTopicShare(state.articles);
+    }, delay);
+  }
+
+  function installTopicGuard() {
+    const donut = document.querySelector("#topicDonut");
+    const legend = document.querySelector("#topicLegend");
+    if (!donut || !legend || donut.__adminArticleTopicGuard) return;
+    const observer = new MutationObserver(() => {
+      if (!renderingArticleTopic && state.articles.length) scheduleTopicGuard();
+    });
+    observer.observe(donut, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class"] });
+    observer.observe(legend, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class"] });
+    donut.__adminArticleTopicGuard = observer;
   }
 
   function installStyle() {
@@ -307,6 +336,7 @@
   async function refresh() {
     installStyle();
     const [articles, events] = await Promise.all([loadArticles(), loadEvents()]);
+    installTopicGuard();
     renderCards(events, articles);
     renderTopicShare(articles);
     window.PolicyPulseAdminKpiSync = {
@@ -344,5 +374,7 @@
   document.querySelector("#refreshStats")?.addEventListener("click", () => {
     resetArticleCache();
     schedule(600);
+    schedule(1000);
+    schedule(1800);
   });
 })();
