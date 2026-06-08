@@ -1,0 +1,31 @@
+:root[data-theme="dark"] body.admin-page .admin-dashboard-hero {
+  background:
+    linear-gradient(135deg, rgba(16, 31, 35, 0.98), rgba(8, 23, 25, 0.98)),
+    #0f1b20;
+  border-color: color-mix(in srgb, var(--admin-primary) 30%, var(--admin-line));
+  color: var(--admin-ink);
+}
+
+:root[data-theme="dark"] body.admin-page .admin-dashboard-hero .eyebrow {
+  color: #5ee8d7;
+}
+
+:root[data-theme="dark"] body.admin-page .admin-dashboard-hero h1 {
+  color: #f7fffc;
+}
+
+:root[data-theme="dark"] body.admin-page .admin-dashboard-hero p {
+  color: rgba(238, 246, 243, 0.8);
+}
+
+:root[data-theme="dark"] body.admin-page .admin-dashboard-hero .admin-button {
+  background: rgba(238, 246, 243, 0.08);
+  border-color: rgba(238, 246, 243, 0.34);
+  color: #f7fffc;
+}
+
+:root[data-theme="dark"] body.admin-page .admin-dashboard-hero .admin-button.primary {
+  background: var(--admin-primary);
+  border-color: var(--admin-primary);
+  color: #061719;
+}
