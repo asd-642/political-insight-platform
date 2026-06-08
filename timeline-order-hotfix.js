@@ -39,7 +39,7 @@
   }
 
   function articleDateValue(article) {
-    return article.publishedAt || article.reviewedAt || article.updatedAt || article.createdAtIso || article.createdAt || article.updated || "";
+    return article.updated || article.publishedAt || article.reviewedAt || article.updatedAt || article.createdAtIso || article.createdAt || "";
   }
 
   function articleTime(article) {
