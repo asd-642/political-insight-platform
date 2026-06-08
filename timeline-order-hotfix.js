@@ -192,12 +192,20 @@
     return row.querySelector("h3")?.textContent?.trim() || "";
   }
 
+  function cleanTimelineRowTitle(row) {
+    const title = row.querySelector("h3");
+    if (!title) return;
+    const cleaned = cleanReviewCopy(title.textContent);
+    if (cleaned && cleaned !== title.textContent) title.textContent = cleaned;
+  }
+
   function sortTimelineRows() {
     const list = document.querySelector(LIST_SELECTOR);
     if (!list || list.dataset.sortingTimeline === "true") return;
 
     const rows = Array.from(list.querySelectorAll(`:scope > ${ROW_SELECTOR}`));
     if (rows.length < 2) return;
+    rows.forEach(cleanTimelineRowTitle);
 
     const sorted = [...rows].sort((a, b) => {
       const timeDiff = parseDate(b) - parseDate(a);
