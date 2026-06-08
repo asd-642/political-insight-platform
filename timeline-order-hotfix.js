@@ -107,8 +107,15 @@
 
   function mergeTimeline(existingTimeline, articles) {
     const byArticleId = new Map();
+    const officialDays = new Set(
+      articles
+        .map((article) => dateKey(articleDateValue(article), article.updated || ""))
+        .filter(Boolean),
+    );
     existingTimeline.forEach((item) => {
       const articleId = item.articleId || String(item.id || "").replace(/^timeline-/, "");
+      const itemDate = dateKey(item.publishedAt || item.date || "", item.date || "");
+      if (officialDays.has(itemDate)) return;
       if (articleId) byArticleId.set(articleId, item);
     });
     articles.forEach((article) => {
