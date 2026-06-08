@@ -3,6 +3,15 @@
   const LIST_SELECTOR = "#timelineList";
   const ROW_SELECTOR = ".timeline-item";
   const RETRY_DELAYS = [0, 80, 250, 700, 1500, 3500, 7000];
+  const TOPIC_NAMES = {
+    budget: "財經",
+    housing: "居住",
+    energy: "能源",
+    transport: "交通",
+    labor: "勞工",
+    education: "教育",
+  };
+  let officialArticles = [];
   let officialTitlesByDate = new Map();
   let timer = 0;
 
@@ -49,6 +58,15 @@
       .trim();
   }
 
+  function escapeHtml(value) {
+    return String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
   function normalizeArticle(doc) {
     const data = doc.data();
     const publishedAt = isoValue(data.publishedAt);
@@ -67,6 +85,7 @@
   }
 
   function buildOfficialIndex(articles) {
+    officialArticles = articles;
     const byDate = new Map();
     articles.forEach((article) => {
       const day = dateKey(articleDateValue(article), article.updated || "");
@@ -131,17 +150,67 @@
     return Number.isFinite(time) ? time : 0;
   }
 
+  function articleUrl(id) {
+    return `/article.html?id=${encodeURIComponent(id)}`;
+  }
+
+  function articleDescription(article) {
+    return cleanText(article.summary || article.excerpt || article.description || "");
+  }
+
+  function createOfficialRow(article) {
+    const row = document.createElement("article");
+    const date = dateKey(articleDateValue(article), article.updated || "");
+    row.className = "timeline-item timeline-link";
+    row.dataset.officialTimeline = "true";
+    row.dataset.articleId = article.id || "";
+    row.tabIndex = 0;
+    row.setAttribute("role", "link");
+    row.innerHTML = `
+      <time>${escapeHtml(date)}</time>
+      <div>
+        <p class="eyebrow">${escapeHtml(TOPIC_NAMES[article.topic] || article.topic || "議題")}</p>
+        <h3>${escapeHtml(cleanText(article.title || "文章更新"))}</h3>
+        <p>${escapeHtml(articleDescription(article))}</p>
+      </div>
+    `;
+    const open = () => {
+      if (article.id) location.href = articleUrl(article.id);
+    };
+    row.addEventListener("click", open);
+    row.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        open();
+      }
+    });
+    return row;
+  }
+
+  function rebuildOfficialDayRows(list) {
+    if (!officialArticles.length) return;
+    const officialDays = new Set(officialArticles.map((article) => dateKey(articleDateValue(article), article.updated || "")).filter(Boolean));
+    const rows = Array.from(list.querySelectorAll(`:scope > ${ROW_SELECTOR}`));
+    const officialDayRows = rows.filter((row) => officialDays.has(rowDate(row)));
+    const officialRows = officialDayRows.filter((row) => row.dataset.officialTimeline === "true");
+    const needsRebuild = officialDayRows.length !== officialArticles.length || officialRows.length !== officialArticles.length;
+    if (!needsRebuild) return;
+    officialDayRows.forEach((row) => row.remove());
+    officialArticles.forEach((article) => list.appendChild(createOfficialRow(article)));
+  }
+
   function pruneAndSortRows() {
     const list = document.querySelector(LIST_SELECTOR);
     if (!list || list.dataset.sortingTimeline === "true") return;
 
     list.dataset.sortingTimeline = "true";
     try {
+      rebuildOfficialDayRows(list);
       Array.from(list.querySelectorAll(`:scope > ${ROW_SELECTOR}`)).forEach((row) => {
         cleanRow(row);
         const day = rowDate(row);
         const officialTitles = officialTitlesByDate.get(day);
-        if (officialTitles?.size && !officialTitles.has(rowTitle(row))) row.remove();
+        if (officialTitles?.size && row.dataset.officialTimeline !== "true" && !officialTitles.has(rowTitle(row))) row.remove();
       });
 
       const rows = Array.from(list.querySelectorAll(`:scope > ${ROW_SELECTOR}`));
