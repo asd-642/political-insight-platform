@@ -27,8 +27,24 @@ body.auth-locked {
 }
 
 .auth-card-game > *,
-.auth-card-game .auth-form {
+.auth-card-game .auth-form,
+.auth-card-game .auth-field,
+.auth-card-game .auth-field-plain,
+.auth-card-game .auth-actions,
+.auth-card-game .auth-helper-row,
+.auth-card-game .social-login-row,
+.auth-card-game .auth-bottom-row {
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-card-game input,
+.auth-card-game button,
+.auth-card-game a {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .auth-card-game .auth-site-title {
@@ -275,11 +291,15 @@ body.auth-locked {
 
   .auth-card-game {
     width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
   }
 
   .auth-identity-panel,
   .auth-form-panel {
     padding: 24px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .auth-card-game .auth-site-title {
