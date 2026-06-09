@@ -290,13 +290,13 @@ body.auth-locked {
   }
 
   .auth-card-game {
-    width: calc(100vw - 20px);
-    max-width: calc(100vw - 20px);
+    width: min(340px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
   }
 
   .auth-identity-panel,
   .auth-form-panel {
-    padding: 24px;
+    padding: 20px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -304,6 +304,10 @@ body.auth-locked {
 
   .auth-card-game .auth-site-title {
     font-size: 28px;
+  }
+
+  .auth-login-copy h1 {
+    font-size: clamp(34px, 10vw, 42px);
   }
 
   .auth-card-game .auth-field-plain input,
