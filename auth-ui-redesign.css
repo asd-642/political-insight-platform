@@ -1,0 +1,307 @@
+body.auth-locked {
+  overflow: hidden;
+}
+
+.auth-lock {
+  place-items: center;
+  padding: clamp(14px, 3vw, 28px);
+  overflow: auto;
+  background:
+    linear-gradient(115deg, rgba(5, 23, 24, 0.96) 0%, rgba(14, 29, 31, 0.96) 48%, rgba(48, 40, 26, 0.94) 100%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 96px);
+  backdrop-filter: blur(14px);
+}
+
+.auth-card-game {
+  grid-template-columns: minmax(0, 0.9fr) minmax(330px, 1fr);
+  gap: 0;
+  width: min(980px, calc(100vw - 28px));
+  min-height: 560px;
+  padding: 0;
+  overflow: hidden;
+  background: #fffaf0;
+  color: #171b21;
+  border: 1px solid rgba(244, 214, 139, 0.24);
+  border-radius: 8px;
+  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.34);
+}
+
+.auth-card-game > *,
+.auth-card-game .auth-form {
+  min-width: 0;
+}
+
+.auth-card-game .auth-site-title {
+  justify-content: flex-start;
+  color: #f9f1df;
+  font-size: clamp(28px, 4vw, 42px);
+}
+
+.auth-card-game .auth-site-mark {
+  background: #f0c45b;
+  color: #10181a;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.auth-identity-panel,
+.auth-form-panel {
+  display: grid;
+}
+
+.auth-identity-panel {
+  align-content: space-between;
+  min-height: 100%;
+  padding: clamp(26px, 5vw, 46px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 38%),
+    linear-gradient(145deg, #10191b 0%, #0b2322 58%, #2b2317 100%);
+  color: #f8f1df;
+}
+
+.auth-login-copy {
+  display: grid;
+  gap: 14px;
+  max-width: 380px;
+}
+
+.auth-login-copy h1 {
+  margin: 0;
+  color: #fff8e8;
+  font-size: clamp(38px, 4vw, 52px);
+  line-height: 1.02;
+}
+
+.auth-login-copy p {
+  margin: 0;
+  color: rgba(248, 241, 223, 0.78);
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.auth-signal-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.auth-signal-row span {
+  min-height: 30px;
+  padding: 7px 10px;
+  border: 1px solid rgba(240, 196, 91, 0.28);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(248, 241, 223, 0.78);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.auth-form-panel {
+  align-content: center;
+  padding: clamp(24px, 5vw, 48px);
+  background:
+    linear-gradient(180deg, rgba(14, 124, 112, 0.08), transparent 36%),
+    #fffaf0;
+}
+
+.auth-card-game .auth-form {
+  gap: 16px;
+}
+
+.auth-card-game .auth-field-plain input {
+  min-height: 56px;
+  padding: 14px 15px;
+  border: 1px solid #d9d3c5;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #171b21;
+  font-size: 17px;
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.auth-card-game .auth-field-plain input::placeholder {
+  color: #8c928f;
+}
+
+.auth-card-game .auth-field-plain input:focus {
+  border-color: #0e7c70;
+  box-shadow: 0 0 0 3px rgba(14, 124, 112, 0.14);
+}
+
+.auth-card-game .auth-submit-wide {
+  min-height: 58px;
+  border: 0;
+  border-radius: 8px;
+  background: #11191b;
+  color: #f0c45b;
+  font-size: 21px;
+  letter-spacing: 0;
+  box-shadow: 0 12px 26px rgba(17, 25, 27, 0.22);
+}
+
+.auth-card-game .auth-submit-wide:hover {
+  border: 0;
+  background: #0e7c70;
+  color: #fffaf0;
+  transform: translateY(-1px);
+}
+
+.auth-card-game .auth-helper-row {
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: -2px;
+}
+
+.auth-card-game .auth-link-button {
+  min-height: 32px;
+  color: #9a671f;
+  font-size: 14px;
+}
+
+.auth-card-game .auth-link-button:hover {
+  color: #0e7c70;
+}
+
+.auth-card-game .social-login-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.auth-card-game .social-login-button {
+  display: flex;
+  min-height: 44px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid #d9d3c5;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #171b21;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: none;
+}
+
+.auth-card-game .social-login-button:hover {
+  transform: translateY(-1px);
+  border-color: #0e7c70;
+  box-shadow: 0 8px 18px rgba(17, 20, 26, 0.08);
+}
+
+.auth-card-game .social-login-button .google-mark {
+  width: auto;
+  height: auto;
+  border: 0;
+  background: transparent;
+  color: #4285f4;
+}
+
+.auth-card-game .facebook-button {
+  background: #f5f9ff;
+  color: #1877f2;
+}
+
+.auth-card-game .apple-button {
+  background: #111111;
+  color: #ffffff;
+}
+
+.auth-card-game .google-mark svg {
+  width: 20px;
+  height: 20px;
+}
+
+.auth-card-game .apple-button span {
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.auth-card-game .auth-bottom-row {
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.auth-card-game .auth-bottom-row .auth-ghost {
+  width: auto;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid #ddd5c8;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  color: #6c6255;
+  font-size: 13px;
+}
+
+.auth-card-game .auth-bottom-row .auth-ghost:hover {
+  color: #11191b;
+  border-color: #0e7c70;
+}
+
+.auth-card-game .auth-message {
+  text-align: left;
+  color: #9a671f;
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .auth-card-game {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .auth-identity-panel {
+    min-height: 230px;
+    gap: 26px;
+  }
+
+  .auth-form-panel {
+    align-content: start;
+  }
+}
+
+@media (max-width: 560px) {
+  .auth-lock {
+    place-items: start center;
+    padding: 10px;
+    overflow-x: hidden;
+  }
+
+  .auth-card-game {
+    width: calc(100vw - 20px);
+  }
+
+  .auth-identity-panel,
+  .auth-form-panel {
+    padding: 24px;
+  }
+
+  .auth-card-game .auth-site-title {
+    font-size: 28px;
+  }
+
+  .auth-card-game .auth-field-plain input,
+  .auth-card-game .auth-link-button,
+  .auth-card-game .social-login-button {
+    font-size: 14px;
+  }
+
+  .auth-card-game .auth-submit-wide {
+    min-height: 54px;
+    font-size: 20px;
+  }
+
+  .auth-card-game .auth-helper-row {
+    justify-content: flex-start;
+  }
+
+  .auth-card-game .social-login-row {
+    grid-template-columns: 1fr;
+  }
+}
