@@ -452,7 +452,7 @@ function updateAccountUi() {
     <div class="account-settings-panel" data-account-settings hidden>
       <div>
         <strong>顯示模式</strong>
-        <span>讓後台與網站一赛切換暗色或亮色。</span>
+        <span>讓後台與網站一起切換暗色或亮色。</span>
       </div>
       <button class="account-setting-button" data-account-action="account-theme" type="button">
         <span data-theme-label>${themeLabel}</span>
@@ -522,49 +522,65 @@ function showAuthOverlay() {
   overlay.setAttribute("aria-label", "登入");
   overlay.innerHTML = `
     <article class="auth-card auth-card-game">
-      <div class="auth-site-title" aria-label="政策脈絡">
-        <span class="auth-site-mark">政</span>
-        <strong>政策脈絡</strong>
-      </div>
-      <form id="authForm" class="auth-form">
-        <label class="auth-field auth-field-plain">
-          <span class="sr-only">信箱</span>
-          <input id="authEmail" type="email" autocomplete="email" placeholder="輸入電子郵件信箱/使用者名稱" value="${defaultEmail}" required />
-        </label>
-        <label class="auth-field auth-field-plain">
-          <span class="sr-only">密碼</span>
-          <input id="authPassword" type="password" autocomplete="current-password" placeholder="輸入密碼" value="${defaultPassword}" required />
-        </label>
-        <div class="auth-helper-row">
-          <a class="auth-link-button" href="register.html">立即註冊</a>
-          <a class="auth-link-button" href="forgot-password.html">忘記密碼</a>
+      <section class="auth-identity-panel" aria-label="政策脈絡">
+        <div class="auth-site-title">
+          <span class="auth-site-mark">政</span>
+          <strong>政策脈絡</strong>
         </div>
-        <button class="auth-submit auth-submit-wide" data-auth-action="login" type="submit">登入</button>
-        <div class="social-login-row" aria-label="社群登入">
-          <button class="social-login-button google-button" data-auth-action="google" type="button" aria-label="使用 Google 帳號登入">
-            <span class="google-mark" aria-hidden="true">
-              <svg viewBox="0 0 48 48" focusable="false">
-                <path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.6 34 29.9 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 3.2l6-6C34.5 4.9 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20.1-7.6 20.1-21 0-1.4-.1-2.7-.4-4z" />
-                <path fill="#34A853" d="M6.1 14.3l7 5.1C15 14.4 19.2 11 24 11c3.1 0 5.9 1.1 8.1 3.2l6-6C34.5 4.9 29.5 3 24 3 16 3 9.1 7.5 5.6 14.1z" />
-                <path fill="#FBBC05" d="M24 45c5.7 0 10.5-1.9 14-5.2l-6.5-5.3C29.6 36.1 27 37 24 37c-5.8 0-10.7-3.9-12.4-9.2l-7 5.4C8 40.2 15.4 45 24 45z" />
-                <path fill="#EA4335" d="M11.6 27.8c-.5-1.5-.7-2.8-.7-3.8s.2-2.3.6-3.7l-7-5.4C3.5 17.7 3 20.8 3 24s.6 6.2 1.7 9.1z" />
-              </svg>
-            </span>
-          </button>
-          <button class="social-login-button facebook-button" data-auth-action="facebook" type="button" aria-label="Facebook 登入預留">
-            <span>f</span>
-          </button>
-          <button class="social-login-button apple-button" data-auth-action="apple" type="button" aria-label="Apple 登入預留">
-            <span>Apple</span>
-          </button>
+        <div class="auth-login-copy">
+          <p class="eyebrow">Member Access</p>
+          <h1>政策資料入口</h1>
+          <p>登入後接續追蹤議題、留言與後台工作。</p>
         </div>
-        <div class="auth-bottom-row">
-          ${allowDemoAccess ? '<button class="auth-ghost" data-auth-action="demo" type="button">使用開發帳號</button>' : ""}
-          <button class="auth-ghost" data-auth-action="theme" type="button">切換明暗色</button>
-          <button class="auth-ghost" data-auth-action="close" type="button">稍後再說</button>
+        <div class="auth-signal-row" aria-hidden="true">
+          <span>焦點</span>
+          <span>議題</span>
+          <span>後台</span>
         </div>
-        <p id="authMessage" class="auth-message" role="status"></p>
-      </form>
+      </section>
+      <section class="auth-form-panel">
+        <form id="authForm" class="auth-form">
+          <label class="auth-field auth-field-plain">
+            <span>帳號</span>
+            <input id="authEmail" type="email" autocomplete="email" placeholder="email@example.com" value="${defaultEmail}" required />
+          </label>
+          <label class="auth-field auth-field-plain">
+            <span>密碼</span>
+            <input id="authPassword" type="password" autocomplete="current-password" placeholder="輸入密碼" value="${defaultPassword}" required />
+          </label>
+          <button class="auth-submit auth-submit-wide" data-auth-action="login" type="submit">登入</button>
+          <div class="auth-helper-row">
+            <a class="auth-link-button" href="register.html">建立帳號</a>
+            <a class="auth-link-button" href="forgot-password.html">忘記密碼</a>
+          </div>
+          <div class="social-login-row" aria-label="社群登入">
+            <button class="social-login-button google-button" data-auth-action="google" type="button" aria-label="使用 Google 帳號登入">
+              <span class="google-mark" aria-hidden="true">
+                <svg viewBox="0 0 48 48" focusable="false">
+                  <path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.6 34 29.9 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 3.2l6-6C34.5 4.9 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20.1-7.6 20.1-21 0-1.4-.1-2.7-.4-4z" />
+                  <path fill="#34A853" d="M6.1 14.3l7 5.1C15 14.4 19.2 11 24 11c3.1 0 5.9 1.1 8.1 3.2l6-6C34.5 4.9 29.5 3 24 3 16 3 9.1 7.5 5.6 14.1z" />
+                  <path fill="#FBBC05" d="M24 45c5.7 0 10.5-1.9 14-5.2l-6.5-5.3C29.6 36.1 27 37 24 37c-5.8 0-10.7-3.9-12.4-9.2l-7 5.4C8 40.2 15.4 45 24 45z" />
+                  <path fill="#EA4335" d="M11.6 27.8c-.5-1.5-.7-2.8-.7-3.8s.2-2.3.6-3.7l-7-5.4C3.5 17.7 3 20.8 3 24s.6 6.2 1.7 9.1z" />
+                </svg>
+              </span>
+              <span>Google</span>
+            </button>
+            <button class="social-login-button facebook-button" data-auth-action="facebook" type="button" aria-label="Facebook 登入預留">
+              <span aria-hidden="true">f</span>
+              <span>Facebook</span>
+            </button>
+            <button class="social-login-button apple-button" data-auth-action="apple" type="button" aria-label="Apple 登入預留">
+              <span>Apple</span>
+            </button>
+          </div>
+          <div class="auth-bottom-row">
+            ${allowDemoAccess ? '<button class="auth-ghost" data-auth-action="demo" type="button">使用開發帳號</button>' : ""}
+            <button class="auth-ghost" data-auth-action="theme" type="button">切換明暗色</button>
+            <button class="auth-ghost" data-auth-action="close" type="button">稍後再說</button>
+          </div>
+          <p id="authMessage" class="auth-message" role="status"></p>
+        </form>
+      </section>
     </article>
   `;
 
