@@ -189,7 +189,7 @@ export default async function handler(request, response) {
       sendJson(response, 200, { ok: true, ...report });
       return;
     }
-    const result = await runDailyDrafts({ date });
+    const result = await runDailyDrafts({ date: requestedDate });
     sendJson(response, 200, {
       ok: true,
       ...result,
