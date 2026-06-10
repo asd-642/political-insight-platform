@@ -1,4 +1,4 @@
-import { getDocument, setDocument } from "./_lib/firestore-rest.mjs";
+import { getDocument, listDocuments, setDocument } from "./_lib/firestore-rest.mjs";
 import { runDailyDrafts } from "./_lib/policy-drafts.mjs";
 
 const firebaseWebApiKey = process.env.FIREBASE_WEB_API_KEY || "AIzaSyA6ZmZnNMylKj2Uy9tS_d933fYHHFWkmS8";
@@ -69,61 +69,66 @@ async function isAuthorized(request) {
   }
 }
 
-function taipeiDate() {
-  return new Intl.DateTimeFormat("en-CA", {
+async function readJsonBody(request) {
+  if (request.method !== "POST") return {};
+  const chunks = [];
+  for await (const chunk of request) chunks.push(chunk);
+  const text = Buffer.concat(chunks).toString("utf8").trim();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {};
+  }
+}
+
+function taipeiDate(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Taipei",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date());
+  }).formatToParts(date);
+  const byType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${byType.year}-${byType.month}-${byType.day}`;
 }
 
-function friendlyServiceError(error) {
-  const message = error?.message || "Daily draft service failed.";
-  if (message.includes("Missing FIREBASE_SERVICE_ACCOUNT")) {
-    return "Vercel 缺少 FIREBASE_SERVICE_ACCOUNT，產稿服務無法寫入 Firebase。";
-  }
-  if (message.includes("FIREBASE_SERVICE_ACCOUNT format is invalid")) {
-    return "Vercel 的 FIREBASE_SERVICE_ACCOUNT 格式不正確，請重新貼上完整 JSON 或 base64 JSON。";
-  }
-  if (message.includes("private_key is invalid")) {
-    return "Firebase 服務帳號 private_key 格式不正確，請重新複製服務帳號 JSON。";
-  }
-  if (message.includes("PERMISSION_DENIED") || message.includes("permission")) {
-    return "Firebase 服務帳號沒有足夠權限，請確認它可讀寫 Firestore。";
-  }
-  return message;
+function resolveRequestedDate(value) {
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  return taipeiDate();
 }
 
-async function writeFailureReport(error) {
-  const now = new Date().toISOString();
-  const report = {
-    date: taipeiDate(),
-    requested: 0,
-    created: [],
-    skipped: [],
-    createdCount: 0,
-    skippedCount: 0,
-    startedAt: now,
-    finishedAt: now,
-    error: friendlyServiceError(error),
+async function existingDailyArticles(date) {
+  const articles = await listDocuments("articles", { pageSize: 300, maxPages: 12 });
+  return articles
+    .filter(({ id, data }) => id.endsWith(`-${date}`) && data?.published !== false)
+    .map(({ id, data }) => ({
+      id,
+      title: data?.title || id,
+      topic: data?.topic || "",
+      reason: "alreadyRanForDate",
+    }));
+}
+
+async function writeDailyReport(report) {
+  const payload = {
+    ...report,
+    createdCount: report.created?.length || 0,
+    skippedCount: report.skipped?.length || 0,
+    finishedAt: new Date().toISOString(),
   };
-
-  try {
-    await setDocument("automationRuns", "daily-drafts-latest", report);
-    await setDocument("automationRuns", `daily-drafts-${report.date}`, report);
-  } catch {
-    // If Firebase itself is unavailable, the API response still carries the error.
-  }
-
-  return report;
+  await Promise.all([
+    setDocument("automationRuns", "daily-drafts-latest", payload),
+    setDocument("automationRuns", `daily-drafts-${report.date}`, payload),
+  ]).catch(() => {});
+  return payload;
 }
 
 async function dailyStatus() {
   const latest = await getDocument("automationRuns", "daily-drafts-latest")
     .then((doc) => doc.data || null)
     .catch((error) => ({
-      error: friendlyServiceError(error),
+      error: error.message || "無法讀取上次執行紀錄。",
     }));
 
   return {
@@ -141,25 +146,6 @@ async function dailyStatus() {
   };
 }
 
-function publicDailyStatus(status) {
-  const latest = status.latest
-    ? {
-        date: status.latest.date || null,
-        finishedAt: status.latest.finishedAt || null,
-        createdCount: status.latest.createdCount ?? status.latest.created?.length ?? 0,
-        skippedCount: status.latest.skippedCount ?? status.latest.skipped?.length ?? 0,
-        hasError: Boolean(status.latest.error),
-      }
-    : null;
-
-  return {
-    ok: true,
-    public: true,
-    schedule: status.schedule,
-    latest,
-  };
-}
-
 export default async function handler(request, response) {
   if (request.method === "OPTIONS") {
     sendJson(response, 204, {});
@@ -171,17 +157,7 @@ export default async function handler(request, response) {
     return;
   }
 
-  const url = new URL(request.url || "/api/daily-drafts", "https://policypulse.tw");
-  const wantsStatus = url.searchParams.get("status") === "1";
-  const authorized = await isAuthorized(request);
-
-  if (wantsStatus) {
-    const status = await dailyStatus();
-    sendJson(response, 200, authorized ? status : publicDailyStatus(status));
-    return;
-  }
-
-  if (!authorized) {
+  if (!(await isAuthorized(request))) {
     sendJson(response, 401, {
       ok: false,
       error: "Unauthorized. Vercel Cron must use CRON_SECRET, and manual runs must be started by an admin account.",
@@ -189,8 +165,31 @@ export default async function handler(request, response) {
     return;
   }
 
+  const url = new URL(request.url || "/api/daily-drafts", "https://policypulse.tw");
+  if (url.searchParams.get("status") === "1") {
+    sendJson(response, 200, await dailyStatus());
+    return;
+  }
+
   try {
-    const result = await runDailyDrafts();
+    const body = await readJsonBody(request);
+    const date = url.searchParams.get("date") || body.date || "";
+    const requestedDate = resolveRequestedDate(date);
+    const existing = await existingDailyArticles(requestedDate);
+    if (existing.length && url.searchParams.get("force") !== "1" && body.force !== true) {
+      const report = await writeDailyReport({
+        date: requestedDate,
+        requested: 0,
+        created: [],
+        skipped: existing,
+        alreadyRanForDate: true,
+        existingArticleCount: existing.length,
+        startedAt: new Date().toISOString(),
+      });
+      sendJson(response, 200, { ok: true, ...report });
+      return;
+    }
+    const result = await runDailyDrafts({ date });
     sendJson(response, 200, {
       ok: true,
       ...result,
@@ -198,11 +197,9 @@ export default async function handler(request, response) {
       skippedCount: result.skipped.length,
     });
   } catch (error) {
-    const report = await writeFailureReport(error);
     sendJson(response, 500, {
       ok: false,
-      ...report,
-      error: report.error,
+      error: error.message || "Daily draft generation failed.",
     });
   }
 }

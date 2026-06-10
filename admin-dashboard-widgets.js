@@ -32,17 +32,17 @@
     const style = document.createElement("style");
     style.id = "adminDashboardWidgetStyles";
     style.textContent = `
-      .traffic-chart{display:block;min-height:360px;padding:18px 12px 12px}
+      .traffic-chart{display:block;min-height:430px;padding:22px 14px 16px}
       .traffic-line-chart{display:block}
-      .traffic-line-stage{position:relative;display:grid;grid-template-rows:auto 34px;gap:8px;min-height:0}
-      .traffic-line-chart svg{display:block;width:100%;height:auto;min-height:230px;overflow:visible}
+      .traffic-line-stage{position:relative;display:grid;grid-template-rows:auto 58px;gap:10px;min-height:0}
+      .traffic-line-chart svg{display:block;width:100%;height:auto;min-height:300px;overflow:visible}
       .traffic-line-grid{stroke:rgba(148,163,184,.22);stroke-width:1}
       .traffic-line-area{fill:rgba(8,122,109,.16)}
       .traffic-line-path{fill:none;stroke:#2dd4bf;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
       .traffic-line-point{fill:#2dd4bf;stroke:var(--panel, #fffdf8);stroke-width:3}
       .traffic-line-value{fill:var(--ink, #101820);font-size:15px;font-weight:900;text-anchor:middle}
-      .traffic-line-axis{position:relative;min-height:34px;pointer-events:none}
-      .traffic-line-label{position:absolute;top:0;left:clamp(34px,var(--x),calc(100% - 34px));width:68px;transform:translateX(-50%);color:var(--muted, #52606d);font-size:12px;font-weight:800;line-height:1.2;text-align:center;white-space:nowrap}
+      .traffic-line-axis{position:relative;min-height:58px;pointer-events:none}
+      .traffic-line-label{position:absolute;top:calc(var(--lane,0) * 20px);left:clamp(34px,var(--x),calc(100% - 34px));width:68px;transform:translateX(-50%);color:var(--muted, #52606d);font-size:12px;font-weight:800;line-height:1.2;text-align:center;white-space:nowrap}
       .topic-chart-shell{display:grid;grid-template-columns:minmax(116px,150px) minmax(0,360px);gap:18px;align-items:center;justify-content:start}
       .topic-donut{width:140px;max-width:100%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;background:rgba(8,122,109,.12)}
       .topic-donut::after{content:"";position:absolute;inset:24%;border-radius:50%;background:var(--panel, #fffdf8)}
@@ -138,7 +138,7 @@
       return {
         range,
         count: 24,
-        labelEvery: 3,
+        labelEvery: 4,
         aria: "最近 24 小時每小時受眾流量折線圖",
         start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() - 23),
         add(date, offset) {
@@ -175,7 +175,7 @@
     return {
       range: "daily",
       count: 30,
-      labelEvery: 5,
+      labelEvery: 4,
       aria: "最近 30 天每天受眾流量折線圖",
       start: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29),
       add(date, offset) {
@@ -311,18 +311,21 @@
       const bucket = bucketMap.get(key);
       if (bucket) bucket.count += 1;
     });
+    buckets.forEach((bucket, index) => {
+      bucket.showLabel = bucket.count > 0 || index === 0 || index === buckets.length - 1 || index % config.labelEvery === 0;
+    });
     const max = Math.max(1, ...buckets.map((bucket) => bucket.count));
     const width = 1000;
-    const height = 230;
-    const padX = 46;
-    const padTop = 30;
-    const padBottom = 28;
+    const height = 300;
+    const padX = 56;
+    const padTop = 34;
+    const padBottom = 46;
     const usableWidth = width - padX * 2;
     const usableHeight = height - padTop - padBottom;
     const points = buckets.map((bucket, index) => {
       const x = padX + (usableWidth / Math.max(1, buckets.length - 1)) * index;
       const y = height - padBottom - (bucket.count / max) * usableHeight;
-      return { ...bucket, x, y, xPercent: (x / width) * 100 };
+      return { ...bucket, x, y, xPercent: (x / width) * 100, labelLane: index % 2 };
     });
     const linePath = points.map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
     const areaPath = `${linePath} L${points.at(-1).x.toFixed(1)} ${height - padBottom} L${points[0].x.toFixed(1)} ${height - padBottom} Z`;
@@ -354,7 +357,7 @@
             ${points
               .filter((point) => point.showLabel)
               .map((point) => `
-                <div class="traffic-line-label" style="--x:${point.xPercent.toFixed(2)}%" title="${escapeHtml(point.title)}，${trafficRangeLabel(config.range)} ${point.count} 筆事件">
+                <div class="traffic-line-label" style="--x:${point.xPercent.toFixed(2)}%;--lane:${point.labelLane}" title="${escapeHtml(point.title)}，${trafficRangeLabel(config.range)} ${point.count} 筆事件">
                   ${escapeHtml(point.label)}
                 </div>
               `)
@@ -369,7 +372,7 @@
     const donut = document.querySelector("#topicDonut");
     const legend = document.querySelector("#topicLegend");
     if (!donut || !legend) return;
-    const rows = countLabels(events.map(eventTopic)).slice(0, 6);
+    const rows = countLabels(events.map(eventTopic).filter((label) => label && label !== "未分類")).slice(0, 6);
     const total = rows.reduce((sum, [, count]) => sum + count, 0);
     if (!total) {
       donut.style.background = "";

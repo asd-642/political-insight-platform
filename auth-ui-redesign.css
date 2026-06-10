@@ -329,3 +329,122 @@ body.auth-locked {
     grid-template-columns: 1fr;
   }
 }
+
+.account-menu {
+  width: min(360px, calc(100vw - 24px));
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(45, 212, 191, 0.28);
+  background:
+    linear-gradient(180deg, rgba(45, 212, 191, 0.08), transparent 36%),
+    #0f1b20;
+  color: #f7fbf9;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
+}
+
+:root[data-theme="light"] .account-menu {
+  border-color: #d8d1c2;
+  background:
+    linear-gradient(180deg, rgba(14, 124, 112, 0.08), transparent 38%),
+    #fffaf0;
+  color: #151d22;
+  box-shadow: 0 18px 48px rgba(31, 41, 55, 0.16);
+}
+
+.account-menu-profile {
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 12px;
+}
+
+.account-avatar {
+  width: 56px;
+  border-radius: 8px;
+  background: #0e7c70;
+  color: #fffaf0;
+}
+
+.account-avatar svg {
+  width: 30px;
+  height: 30px;
+}
+
+.account-identity strong {
+  font-size: 17px;
+}
+
+.account-identity span {
+  color: rgba(247, 251, 249, 0.68);
+  font-size: 13px;
+}
+
+:root[data-theme="light"] .account-identity span {
+  color: #6b7280;
+}
+
+.account-primary-action {
+  min-height: 44px;
+  border-radius: 8px;
+  border-color: rgba(45, 212, 191, 0.24);
+  background: rgba(45, 212, 191, 0.1);
+  color: inherit;
+  font-size: 15px;
+}
+
+.account-primary-action:hover,
+.account-menu-row:hover,
+.account-setting-button:hover,
+.account-setting-link:hover {
+  background: rgba(45, 212, 191, 0.14);
+  color: #2dd4bf;
+}
+
+:root[data-theme="light"] .account-primary-action,
+:root[data-theme="light"] .account-setting-button,
+:root[data-theme="light"] .account-setting-link {
+  border-color: #d8d1c2;
+  background: #fffdf8;
+  color: #151d22;
+}
+
+.account-menu-list {
+  margin-top: 12px;
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.account-menu-row {
+  min-height: 48px;
+  padding: 0 6px;
+  color: inherit;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.account-menu-row + .account-menu-row {
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+.account-menu-row svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
+.account-settings-panel {
+  border-radius: 8px;
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:root[data-theme="light"] .account-settings-panel {
+  background: #fffdf8;
+}
+
+.account-menu-notice {
+  color: rgba(247, 251, 249, 0.62);
+}
+
+:root[data-theme="light"] .account-menu-notice {
+  color: #6b7280;
+}

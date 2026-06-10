@@ -168,6 +168,28 @@
     };
   }
 
+  function firestoreSafeValue(value, insideArray = false) {
+    if (value === null || value === undefined) return value;
+    if (value instanceof Date) return value;
+    if (value && typeof value === "object" && value.constructor?.name?.includes("FieldValue")) return value;
+    if (Array.isArray(value)) {
+      if (insideArray) {
+        return Object.fromEntries(
+          value.map((item, index) => [`item${index}`, firestoreSafeValue(item, true)]),
+        );
+      }
+      return value.map((item) => firestoreSafeValue(item, true));
+    }
+    if (typeof value === "object") {
+      return Object.fromEntries(
+        Object.entries(value)
+          .filter(([, item]) => item !== undefined)
+          .map(([key, item]) => [key, firestoreSafeValue(item, insideArray)]),
+      );
+    }
+    return value;
+  }
+
   async function install(api, firestoreModule) {
     if (!api?.ready || !api.db || !api.resolveAdminAccess) return;
     const db = api.db;
@@ -217,7 +239,7 @@
         }
 
         const article = markDraftPublishedForReview(draft, now, serverNow());
-        batch.set(firestoreModule.doc(db, "articles", article.id), article, { merge: true });
+        batch.set(firestoreModule.doc(db, "articles", article.id), firestoreSafeValue(article), { merge: true });
         batch.set(firestoreModule.doc(db, "timeline", `timeline-${article.id}`), articleTimeline(article), { merge: true });
         created.push({
           file: reviewFileForArticle(article.id),

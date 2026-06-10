@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-Hant-TW">
   <head>
     <meta charset="utf-8" />
@@ -21,8 +21,30 @@
     />
     <meta name="robots" content="noindex,nofollow" />
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="styles.css?v=20260609-1" />
-    <link rel="stylesheet" href="auth-ui-redesign.css?v=20260609-1" />
+    <link rel="stylesheet" href="styles.css?v=20260610-1" />
+    <link rel="stylesheet" href="auth-ui-redesign.css?v=20260610-1" />
+    <style>
+      .practical-record-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .practical-record-card {
+        align-content: start;
+        min-height: 230px;
+      }
+
+      .practical-record-metric {
+        color: var(--ink);
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1;
+      }
+
+      @media (max-width: 860px) {
+        .practical-record-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
   <body class="doc-page admin-page data-map-page">
     <header class="topbar">
@@ -51,10 +73,10 @@
         <section class="data-map-hero">
           <div>
             <p class="eyebrow">Backend Data Map</p>
-            <h1>資料庫紀錄示意</h1>
+            <h1>後台資料庫總覽</h1>
             <p>
-              這一頁把大型入口網站常見的後台資料，轉成「政策脈絡」可以採用的資料表設計。它不是 Yahoo
-              的內部資料，而是你自己的網站未來可接 Firebase、資料庫或分析工具時的紀錄藍圖。
+              這一頁只保留站長會真的用到的資料：文章庫存、流量互動、登入權限、留言風險與系統健康。
+              看不懂的資料表欄位先拿掉，改成可以直接檢查網站狀態的紀錄面板。
             </p>
           </div>
           <div class="data-map-actions">
@@ -69,29 +91,29 @@
           <div class="admin-table-head">
             <div>
               <p class="eyebrow">Flow</p>
-              <h2>網站資料怎麼進後台</h2>
+              <h2>後台資料怎麼流動</h2>
             </div>
           </div>
           <div class="data-flow-steps">
             <article>
               <span>01</span>
-              <strong>使用者進站</strong>
-              <p>記錄頁面瀏覽、來源頁、裝置基本資訊與同意狀態。</p>
+              <strong>前台互動</strong>
+              <p>只收集瀏覽、搜尋、文章點擊、留言等必要事件。</p>
             </article>
             <article>
               <span>02</span>
-              <strong>互動產生事件</strong>
-              <p>搜尋、點文章、切換分類、留言、檢舉與登入都會形成事件。</p>
+              <strong>排除內部流量</strong>
+              <p>後台、本機預覽與管理員帳號不列入受眾統計。</p>
             </article>
             <article>
               <span>03</span>
-              <strong>後台整理資料</strong>
-              <p>資料表把事件歸到會員、文章、內容呈現與審核流程。</p>
+              <strong>整理成面板</strong>
+              <p>轉成文章庫存、今日互動、來源渠道與待檢查內容。</p>
             </article>
             <article>
               <span>04</span>
-              <strong>分析與安全控管</strong>
-              <p>用於熱門內容、廣告成效、異常登入與留言風險判斷。</p>
+              <strong>檢查異常</strong>
+              <p>快速看產稿、登入、留言與流量是否有異常。</p>
             </article>
           </div>
         </section>
@@ -105,155 +127,27 @@
             <button id="refreshDataMap" class="admin-button" type="button">重新整理</button>
           </div>
           <div class="data-record-note">
-            本區只讀取這台瀏覽器的本機資料，不會把你的帳號或事件送到外部。部署環境可以改成讀 Firebase 或後端資料庫。
+            本區先顯示這台瀏覽器的本機紀錄；正式站可同步讀取 Firebase 文章庫存，用來核對首頁與後台數字。
           </div>
           <div id="localRecordRows" class="data-record-list"></div>
         </section>
 
-        <section class="admin-table">
+        <section class="admin-table practical-record-panel">
           <div class="admin-table-head">
             <div>
-              <p class="eyebrow">Schema</p>
-              <h2>建議資料表</h2>
+              <p class="eyebrow">Useful Records</p>
+              <h2>實用後台紀錄</h2>
             </div>
           </div>
-          <div class="schema-grid">
-            <article class="schema-card">
-              <div class="schema-card-head">
-                <span>01</span>
-                <h3>users</h3>
-              </div>
-              <p>會員與管理員帳號。正式站只存密碼雜湊，不存明文密碼。</p>
-              <dl>
-                <div><dt>uid</dt><dd>使用者唯一 ID</dd></div>
-                <div><dt>email</dt><dd>登入信箱</dd></div>
-                <div><dt>role</dt><dd>visitor、member、editor、admin</dd></div>
-                <div><dt>createdAt</dt><dd>註冊時間</dd></div>
-                <div><dt>lastLoginAt</dt><dd>最近登入時間</dd></div>
-                <div><dt>privacyConsent</dt><dd>隱私與 Cookie 同意狀態</dd></div>
-              </dl>
-            </article>
-
-            <article class="schema-card">
-              <div class="schema-card-head">
-                <span>02</span>
-                <h3>sessions</h3>
-              </div>
-              <p>登入狀態與裝置紀錄，用來判斷是否需要重新登入或提示異常。</p>
-              <dl>
-                <div><dt>sessionId</dt><dd>瀏覽器工作階段 ID</dd></div>
-                <div><dt>uid</dt><dd>對應使用者</dd></div>
-                <div><dt>signedInAt</dt><dd>登入時間</dd></div>
-                <div><dt>device</dt><dd>瀏覽器與系統摘要</dd></div>
-                <div><dt>ipHash</dt><dd>IP 雜湊值，降低敏感度</dd></div>
-                <div><dt>expiresAt</dt><dd>過期時間</dd></div>
-              </dl>
-            </article>
-
-            <article class="schema-card">
-              <div class="schema-card-head">
-                <span>03</span>
-                <h3>events</h3>
-              </div>
-              <p>網站互動流水帳，是分析熱門內容、搜尋需求與使用路徑的核心資料。</p>
-              <dl>
-                <div><dt>eventId</dt><dd>事件唯一 ID</dd></div>
-                <div><dt>type</dt><dd>page_view、search、article_select 等</dd></div>
-                <div><dt>path</dt><dd>發生在哪個頁面</dd></div>
-                <div><dt>payload</dt><dd>標題、查詢字或文章 ID</dd></div>
-                <div><dt>uid</dt><dd>可匿名，視隱私設定決定</dd></div>
-                <div><dt>at</dt><dd>事件時間</dd></div>
-              </dl>
-            </article>
-
-            <article class="schema-card">
-              <div class="schema-card-head">
-                <span>04</span>
-                <h3>articles</h3>
-              </div>
-              <p>文章、來源與審稿狀態，支援編輯台的內容審核流程。</p>
-              <dl>
-                <div><dt>id</dt><dd>文章代號</dd></div>
-                <div><dt>topic</dt><dd>財經、居住、能源等分類</dd></div>
-                <div><dt>title</dt><dd>標題</dd></div>
-                <div><dt>status</dt><dd>draft、review、published</dd></div>
-                <div><dt>sources</dt><dd>來源名稱與網址</dd></div>
-                <div><dt>updatedAt</dt><dd>更新時間</dd></div>
-              </dl>
-            </article>
-
-            <article class="schema-card">
-              <div class="schema-card-head">
-                <span>05</span>
-                <h3>comments</h3>
-              </div>
-              <p>留言、回覆、按讚、檢舉與隱藏狀態，讓後台可以做審核。</p>
-              <dl>
-                <div><dt>id</dt><dd>留言 ID</dd></div>
-                <div><dt>articleId</dt><dd>留言所屬文章</dd></div>
-                <div><dt>uid</dt><dd>留言者</dd></div>
-                <div><dt>body</dt><dd>留言內容</dd></div>
-                <div><dt>status</dt><dd>visible、hidden、deleted</dd></div>
-                <div><dt>reportCount</dt><dd>檢舉次數</dd></div>
-              </dl>
-            </article>
-
-            <article class="schema-card">
-              <div class="schema-card-head">
-                <span>06</span>
-                <h3>ad_events</h3>
-              </div>
-              <p>內容曝光與互動紀錄，之後可和營運報表對照。</p>
-              <dl>
-                <div><dt>impressionId</dt><dd>曝光 ID</dd></div>
-                <div><dt>slot</dt><dd>728x90、300x250、in-feed</dd></div>
-                <div><dt>page</dt><dd>出現頁面或文章</dd></div>
-                <div><dt>campaign</dt><dd>廣告活動，可留空</dd></div>
-                <div><dt>shownAt</dt><dd>曝光時間</dd></div>
-                <div><dt>clickedAt</dt><dd>點擊時間，可留空</dd></div>
-              </dl>
-            </article>
-
-            <article class="schema-card">
-              <div class="schema-card-head">
-                <span>07</span>
-                <h3>security_logs</h3>
-              </div>
-              <p>登入失敗、異常操作、檢舉高峰與可疑流量，用於風險控管。</p>
-              <dl>
-                <div><dt>id</dt><dd>紀錄 ID</dd></div>
-                <div><dt>kind</dt><dd>login_failed、spam_report、rate_limit</dd></div>
-                <div><dt>score</dt><dd>風險分數</dd></div>
-                <div><dt>reason</dt><dd>觸發原因</dd></div>
-                <div><dt>status</dt><dd>open、reviewed、ignored</dd></div>
-                <div><dt>createdAt</dt><dd>建立時間</dd></div>
-              </dl>
-            </article>
-
-            <article class="schema-card">
-              <div class="schema-card-head">
-                <span>08</span>
-                <h3>consents</h3>
-              </div>
-              <p>隱私、Cookie、個人化廣告與通知訂閱的同意紀錄。</p>
-              <dl>
-                <div><dt>uid</dt><dd>使用者 ID，可匿名</dd></div>
-                <div><dt>analytics</dt><dd>是否同意分析</dd></div>
-                <div><dt>personalizedAds</dt><dd>是否同意個人化廣告</dd></div>
-                <div><dt>newsletter</dt><dd>是否訂閱通知</dd></div>
-                <div><dt>version</dt><dd>同意條款版本</dd></div>
-                <div><dt>updatedAt</dt><dd>最近更新時間</dd></div>
-              </dl>
-            </article>
-          </div>
+          <div id="practicalRecordCards" class="schema-grid practical-record-grid"></div>
         </section>
       </section>
     </main>
 
     <script src="firebase-config.js"></script>
-    <script src="firebase-bootstrap.js?v=20260608-3"></script>
-    <script src="auth-theme.js?v=20260609-1"></script>
+    <script src="firebase-bootstrap.js?v=20260610-1"></script>
+    <script src="auth-theme.js?v=20260610-1"></script>
     <script src="content/generated-content.js"></script>
-    <script src="data-map.js?v=20260520-1"></script>
+    <script src="data-map.js?v=20260610-2"></script>
   </body>
 </html>

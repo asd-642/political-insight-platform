@@ -5,68 +5,16 @@ const tokenCache = {
   expiresAt: 0,
 };
 
-function stripEnvAssignment(value) {
-  return String(value || "").replace(/^\s*(FIREBASE_SERVICE_ACCOUNT|FIREBASE_SERVICE_ACCOUNT_BASE64|GOOGLE_SERVICE_ACCOUNT_JSON)\s*=\s*/i, "");
-}
-
-function stripWrappingQuotes(value) {
-  const trimmed = String(value || "").trim();
-  const first = trimmed[0];
-  const last = trimmed[trimmed.length - 1];
-  if ((first === "'" || first === "\"" || first === "`") && first === last) {
-    return trimmed.slice(1, -1).trim();
-  }
-  return trimmed;
-}
-
-function parseJsonCandidate(text) {
-  let value = JSON.parse(text.replace(/^\uFEFF/, ""));
-  if (typeof value === "string") {
-    value = JSON.parse(value);
-  }
-  return value;
-}
-
-function serviceAccountCandidates(raw) {
-  const direct = stripWrappingQuotes(stripEnvAssignment(raw));
-  const base64Source = direct.replace(/^base64:/i, "").trim();
-  const candidates = [
-    raw,
-    direct,
-    direct.replace(/\\"/g, "\""),
-  ];
-
-  for (const encoding of ["base64", "base64url"]) {
-    try {
-      candidates.push(Buffer.from(base64Source, encoding).toString("utf8"));
-    } catch {
-      // Try the next representation.
-    }
-  }
-
-  return [...new Set(candidates.map((item) => String(item || "").trim()).filter(Boolean))];
-}
-
 function parseServiceAccount() {
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 || process.env.GOOGLE_SERVICE_ACCOUNT_JSON || "";
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GOOGLE_SERVICE_ACCOUNT_JSON || "";
   if (!raw.trim()) {
     throw new Error("Missing FIREBASE_SERVICE_ACCOUNT on Vercel.");
   }
 
-  let account;
-  for (const candidate of serviceAccountCandidates(raw)) {
-    try {
-      account = parseJsonCandidate(candidate);
-      break;
-    } catch {
-      account = null;
-    }
-  }
-
-  if (!account || typeof account !== "object") {
-    throw new Error("FIREBASE_SERVICE_ACCOUNT format is invalid. Paste the full service account JSON or a base64 encoded JSON value.");
-  }
-
+  const text = raw.trim().startsWith("{")
+    ? raw.trim()
+    : Buffer.from(raw.trim(), "base64").toString("utf8");
+  const account = JSON.parse(text);
   if (!account.client_email || !account.private_key) {
     throw new Error("FIREBASE_SERVICE_ACCOUNT must include client_email and private_key.");
   }
@@ -93,15 +41,10 @@ async function getAccessToken() {
     exp: now + 3600,
   }));
   const unsigned = `${header}.${payload}`;
-  let signature;
-  try {
-    signature = crypto
-      .createSign("RSA-SHA256")
-      .update(unsigned)
-      .sign(account.private_key, "base64url");
-  } catch {
-    throw new Error("Firebase service account private_key is invalid. Recopy the key from Firebase service account JSON.");
-  }
+  const signature = crypto
+    .createSign("RSA-SHA256")
+    .update(unsigned)
+    .sign(account.private_key, "base64url");
   const assertion = `${unsigned}.${signature}`;
 
   const response = await fetch("https://oauth2.googleapis.com/token", {
@@ -131,6 +74,14 @@ function documentUrl(collection, id) {
   return `https://firestore.googleapis.com/v1/projects/${firebaseProjectId()}/databases/(default)/documents/${collection}/${encodeURIComponent(id)}`;
 }
 
+function collectionUrl(collection, params = {}) {
+  const url = new URL(`https://firestore.googleapis.com/v1/projects/${firebaseProjectId()}/databases/(default)/documents/${collection}`);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
+  });
+  return url.toString();
+}
+
 async function firestoreFetch(url, options = {}) {
   const token = await getAccessToken();
   const response = await fetch(url, {
@@ -150,7 +101,7 @@ async function firestoreFetch(url, options = {}) {
   return data;
 }
 
-function toFirestoreValue(value) {
+function toFirestoreValue(value, insideArray = false) {
   if (value === null || value === undefined) return { nullValue: null };
   if (value instanceof Date) return { timestampValue: value.toISOString() };
   if (typeof value === "string") return { stringValue: value };
@@ -159,65 +110,29 @@ function toFirestoreValue(value) {
     return Number.isInteger(value) ? { integerValue: String(value) } : { doubleValue: value };
   }
   if (Array.isArray(value)) {
-    return { arrayValue: { values: value.map(toFirestoreValue) } };
+    if (insideArray) {
+      return {
+        mapValue: {
+          fields: Object.fromEntries(
+            value.map((item, index) => [`item${index}`, toFirestoreValue(item, true)]),
+          ),
+        },
+      };
+    }
+    return { arrayValue: { values: value.map((item) => toFirestoreValue(item, true)) } };
   }
   if (typeof value === "object") {
-    return { mapValue: { fields: toFirestoreFields(value) } };
+    return { mapValue: { fields: toFirestoreFields(value, insideArray) } };
   }
   return { stringValue: String(value) };
 }
 
-function toFirestoreFields(object) {
+function toFirestoreFields(object, insideArray = false) {
   return Object.fromEntries(
     Object.entries(object || {})
       .filter(([, value]) => value !== undefined)
-      .map(([key, value]) => [key, toFirestoreValue(value)]),
+      .map(([key, value]) => [key, toFirestoreValue(value, insideArray)]),
   );
-}
-
-function normalizeDraftFact(fact, index) {
-  if (Array.isArray(fact)) {
-    return {
-      label: String(fact[0] || `Fact ${index + 1}`),
-      value: String(fact[1] || ""),
-    };
-  }
-  if (fact && typeof fact === "object") {
-    return {
-      label: String(fact.label || fact.name || `Fact ${index + 1}`),
-      value: String(fact.value || fact.text || fact.description || ""),
-    };
-  }
-  return {
-    label: `Fact ${index + 1}`,
-    value: String(fact || ""),
-  };
-}
-
-function normalizeDraftSection(section, index) {
-  if (!section || typeof section !== "object") {
-    return {
-      heading: `Section ${index + 1}`,
-      paragraphs: String(section || ""),
-    };
-  }
-  const paragraphs = Array.isArray(section.paragraphs)
-    ? section.paragraphs.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n")
-    : String(section.paragraphs || section.body || section.content || "").trim();
-  return {
-    ...section,
-    heading: String(section.heading || `Section ${index + 1}`),
-    paragraphs,
-  };
-}
-
-function normalizeDraftForFirestore(data) {
-  if (!data || typeof data !== "object") return data;
-  return {
-    ...data,
-    facts: Array.isArray(data.facts) ? data.facts.map(normalizeDraftFact) : [],
-    sections: Array.isArray(data.sections) ? data.sections.map(normalizeDraftSection) : [],
-  };
 }
 
 function fromFirestoreValue(value = {}) {
@@ -252,10 +167,24 @@ export async function documentExists(collection, id) {
   return (await getDocument(collection, id)).exists;
 }
 
+export async function listDocuments(collection, { pageSize = 300, maxPages = 8 } = {}) {
+  const items = [];
+  let pageToken = "";
+  for (let page = 0; page < maxPages; page += 1) {
+    const data = await firestoreFetch(collectionUrl(collection, { pageSize, pageToken }));
+    (data.documents || []).forEach((document) => {
+      const id = decodeURIComponent(String(document.name || "").split("/").pop() || "");
+      if (id) items.push({ id, data: fromFirestoreFields(document.fields || {}) });
+    });
+    pageToken = data.nextPageToken || "";
+    if (!pageToken) break;
+  }
+  return items;
+}
+
 export async function setDocument(collection, id, data) {
-  const safeData = collection === "drafts" ? normalizeDraftForFirestore(data) : data;
   return firestoreFetch(documentUrl(collection, id), {
     method: "PATCH",
-    body: JSON.stringify({ fields: toFirestoreFields(safeData) }),
+    body: JSON.stringify({ fields: toFirestoreFields(data) }),
   });
 }
