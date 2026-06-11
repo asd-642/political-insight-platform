@@ -43,6 +43,23 @@
     link.href = href;
   }
 
+  function ensureSiteFavicon() {
+    const existing = document.head.querySelector('link[rel="icon"][href="/favicon.svg"], link[rel="icon"][href$="/favicon.svg"]');
+    if (existing) {
+      existing.setAttribute("type", "image/svg+xml");
+      existing.setAttribute("sizes", "any");
+      return;
+    }
+    const transientIcon = document.head.querySelector('link[rel="icon"][href^="data:"]');
+    if (transientIcon) return;
+    const icon = document.createElement("link");
+    icon.rel = "icon";
+    icon.href = faviconUrl;
+    icon.type = "image/svg+xml";
+    icon.sizes = "any";
+    document.head.append(icon);
+  }
+
   function upsertMeta(selector, attrs) {
     let node = document.head.querySelector(selector);
     if (!node) {
@@ -57,10 +74,7 @@
   }
 
   upsertLink("canonical", canonicalUrl.href);
-  upsertLink("icon", faviconUrl);
-  const icon = document.head.querySelector('link[rel="icon"]');
-  icon?.setAttribute("type", "image/svg+xml");
-  icon?.setAttribute("sizes", "any");
+  ensureSiteFavicon();
   upsertMeta('meta[name="application-name"]', { name: "application-name", content: siteName });
   upsertMeta('meta[name="apple-mobile-web-app-title"]', { name: "apple-mobile-web-app-title", content: siteName });
   upsertMeta('meta[name="theme-color"]', { name: "theme-color", content: "#071719" });
@@ -185,7 +199,7 @@
     if (!document.querySelector("#peopleList")) return;
     if (document.querySelector('script[data-people-directory-override="true"]')) return;
     const script = document.createElement("script");
-    script.src = "people-directory-override.js?v=20260602-1";
+    script.src = "people-directory-override.js?v=20260602-2";
     script.defer = true;
     script.dataset.peopleDirectoryOverride = "true";
     document.body.append(script);
