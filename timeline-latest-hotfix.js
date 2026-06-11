@@ -35,7 +35,19 @@
 
   if (!document.querySelector('script[src*="home-fresh-hotfix.js"]')) {
     const script = document.createElement("script");
-    script.src = "home-fresh-hotfix.js?v=20260611-2";
+    script.src = "home-fresh-hotfix.js?v=20260611-3";
+    script.async = false;
+    const current = document.currentScript;
+    if (current?.parentNode) {
+      current.parentNode.insertBefore(script, current.nextSibling);
+    } else {
+      document.head.append(script);
+    }
+  }
+
+  if (!document.querySelector('script[src*="home-image-variety-hotfix.js"]')) {
+    const script = document.createElement("script");
+    script.src = "home-image-variety-hotfix.js?v=20260611-1";
     script.async = false;
     const current = document.currentScript;
     if (current?.parentNode) {
