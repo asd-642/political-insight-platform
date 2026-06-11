@@ -4,6 +4,13 @@
 
   const cls = "policy-fresh-home-loading";
   const styleId = "policyFreshHomeBootstrapStyle";
+  window.PolicyPulseImageVarietyHotfix = {
+    loaded: false,
+    inline: true,
+    cardCount: 0,
+    uniqueImageCount: 0,
+    refreshedAt: new Date().toISOString(),
+  };
   document.documentElement.classList.add(cls);
 
   if (!document.getElementById(styleId)) {
@@ -197,6 +204,11 @@
 
   function installImageVarietyGuard() {
     [80, 300, 700, 1200, 2500, 5000, 9000, 14000].forEach((delay) => setTimeout(applyImageVariety, delay));
+    const startedAt = Date.now();
+    const interval = setInterval(() => {
+      applyImageVariety();
+      if (Date.now() - startedAt > 30000) clearInterval(interval);
+    }, 500);
     const observer = new MutationObserver(() => {
       clearTimeout(installImageVarietyGuard.timer);
       installImageVarietyGuard.timer = setTimeout(applyImageVariety, 80);
