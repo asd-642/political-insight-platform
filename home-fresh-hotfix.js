@@ -14,12 +14,13 @@
     education: "教育",
   };
   const TOPIC_IMAGES = {
-    budget: "assets/hero-market.png",
-    housing: "assets/housing.png",
-    energy: "assets/energy.png",
-    transport: "assets/transport.png",
-    labor: "assets/labor.png",
-    education: "assets/education.png",
+    policy: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=82",
+    budget: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=82",
+    housing: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=82",
+    energy: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=82",
+    transport: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=82",
+    labor: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=82",
+    education: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=82",
   };
   const HIDDEN_TAGS = new Set(["待核查", "待審核", "待補資料", "追蹤中"]);
   let latestArticles = [];
@@ -52,6 +53,30 @@
         background: #0f2025;
         color: #f2fbf8;
         border-color: rgba(111, 226, 207, 0.28);
+      }
+      #articleGrid .article-card,
+      #headlineList .headline-item,
+      .filter-chip,
+      .watch-row {
+        transform: none !important;
+      }
+      #articleGrid .article-card:hover,
+      #articleGrid .article-card.is-selected,
+      #headlineList .headline-item:hover,
+      #headlineList .headline-item.is-selected,
+      .filter-chip:hover,
+      .filter-chip.is-active,
+      .watch-row:hover {
+        transform: none !important;
+      }
+      #articleGrid .article-card {
+        min-height: 360px;
+      }
+      #articleGrid .article-card .thumb {
+        display: block;
+      }
+      #detailBody.detail-body {
+        gap: 12px;
       }
     `;
     document.head.append(style);
@@ -137,8 +162,25 @@
     return TOPIC_NAMES[topic] || cleanCopy(topic) || "政策";
   }
 
+  function visualTopic(article) {
+    const text = [
+      article?.id,
+      article?.title,
+      article?.summary,
+      article?.excerpt,
+      Array.isArray(article?.tags) ? article.tags.join(" ") : "",
+    ].join(" ");
+    if (/交通|道路|公車|捷運|鐵路|通勤|運輸|車流|路線|班次|停車/.test(text)) return "transport";
+    if (/教育|校園|學費|學校|學生|採購|課程/.test(text)) return "education";
+    if (/能源|電價|供電|電網|再生|風力|太陽能|發電/.test(text)) return "energy";
+    if (/居住|住宅|房價|房租|租屋|社宅|都更/.test(text)) return "housing";
+    if (/勞工|薪資|就業|職安|加班|工資/.test(text)) return "labor";
+    if (/預算|財經|財政|補助|稅|產業|投資|物價|經費|財源/.test(text)) return "budget";
+    return article?.topic || "policy";
+  }
+
   function articleImage(article) {
-    return article?.image || article?.heroImage || article?.coverImage || TOPIC_IMAGES[article?.topic] || "assets/podium.png";
+    return TOPIC_IMAGES[visualTopic(article)] || TOPIC_IMAGES.policy;
   }
 
   function publicTags(article) {
@@ -191,7 +233,7 @@
     if (!featured || !article) return;
     const title = articleTitle(article);
     featured.innerHTML = `
-      <img src="${escapeHtml(articleImage(article))}" alt="${escapeHtml(topicName(article.topic))}焦點圖片" decoding="async" fetchpriority="high" />
+      <img src="${escapeHtml(articleImage(article))}" alt="${escapeHtml(topicName(article.topic))}焦點圖片" decoding="async" fetchpriority="high" referrerpolicy="no-referrer" />
       <div class="featured-overlay">
         <span class="topic-badge">${escapeHtml(topicName(article.topic))}</span>
         <h1>${escapeHtml(title)}</h1>
@@ -234,7 +276,7 @@
     const pageItems = articles.slice(0, 12);
     container.innerHTML = pageItems.map((article, index) => `
       <button class="article-card ${index === 0 ? "is-selected" : ""}" type="button" data-fresh-article="${escapeHtml(article.id)}">
-        <img class="thumb" src="${escapeHtml(articleImage(article))}" alt="${escapeHtml(topicName(article.topic))}文章圖片" loading="lazy" decoding="async" />
+        <img class="thumb" src="${escapeHtml(articleImage(article))}" alt="${escapeHtml(topicName(article.topic))}文章圖片" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
         <span class="card-content">
           <span class="card-kicker">
             <span>${escapeHtml(topicName(article.topic))}</span>
@@ -273,15 +315,19 @@
     if (!article || !title || !body) return;
     title.textContent = articleTitle(article);
     body.innerHTML = `
-      <p>${escapeHtml(articleExcerpt(article))}</p>
-      <hr />
-      <h3>快速事實</h3>
-      <p>重點 1：可比對公開資料</p>
-      <p>核心爭點：${escapeHtml(topicName(article.topic))}相關政策影響與各方主張</p>
-      <p>觀察指標：預算、執行進度、公開紀錄</p>
-      <hr />
-      <h3>來源</h3>
-      <span class="tag">資料庫最新文章</span>
+      <p class="detail-summary">${escapeHtml(articleExcerpt(article))}</p>
+      <section class="detail-block">
+        <h3>快速事實</h3>
+        <ul>
+          <li><strong>重點 1：</strong>可比對公開資料</li>
+          <li><strong>核心爭點：</strong>${escapeHtml(topicName(article.topic))}相關政策影響與各方主張</li>
+          <li><strong>觀察指標：</strong>預算、執行進度、公開紀錄</li>
+        </ul>
+      </section>
+      <section class="detail-block">
+        <h3>來源</h3>
+        <div class="source-line"><span class="source-pill">資料庫最新文章</span></div>
+      </section>
     `;
   }
 
@@ -307,6 +353,14 @@
     return true;
   }
 
+  function needsFreshRender() {
+    if (!latestArticles.length) return false;
+    const firstDate = document.querySelector("#articleGrid .article-card .card-kicker span:nth-child(2)")?.textContent?.trim() || "";
+    const newestDate = dateKey(latestArticles[0]);
+    const heroSrc = document.querySelector("#featuredStory img")?.getAttribute("src") || "";
+    return firstDate !== newestDate || /hero-market|assets\/(?:education|energy|housing|labor|podium|transport)\.png/i.test(heroSrc);
+  }
+
   function installRenderGuard() {
     if (observerInstalled) return;
     const targets = ["featuredStory", "headlineList", "articleGrid", "articlePagination", "detailBody"]
@@ -328,7 +382,9 @@
       const [articles] = await Promise.all([loadFreshArticles(), waitForAppRender()]);
       if (!renderFreshHome(articles)) return false;
       installRenderGuard();
-      [400, 1200, 2500, 6000, 11000, 16000].forEach((ms) => setTimeout(() => renderFreshHome(articles), ms));
+      [9000, 14000].forEach((ms) => setTimeout(() => {
+        if (needsFreshRender()) renderFreshHome(articles);
+      }, ms));
       return true;
     } finally {
       reveal();
