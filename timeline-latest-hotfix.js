@@ -16,7 +16,7 @@
       html.${cls} #articlePagination,
       html.${cls} #detailBody { visibility: hidden; }
       html.${cls} #viewOverview::after {
-        content: "\6b63\5728\66f4\65b0\4eca\65e5\6587\7ae0";
+        content: "正在更新今日文章";
         display: block;
         padding: 22px;
         border: 1px solid var(--line, #d7d0c2);
