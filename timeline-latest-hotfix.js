@@ -207,9 +207,8 @@
     });
   }
 
-  loadScriptOnce("home-fresh-hotfix.js?v=20260611-3", "home-fresh-hotfix.js").then(() => {
-    installImageVarietyGuard();
-  });
+  installImageVarietyGuard();
+  loadScriptOnce("home-fresh-hotfix.js?v=20260611-3", "home-fresh-hotfix.js");
 
   setTimeout(() => document.documentElement.classList.remove(cls), 18000);
 })();
