@@ -2,6 +2,13 @@
   const isHome = location.pathname === "/" || /\/index\.html$/i.test(location.pathname);
   if (!isHome) return;
 
+  window.PolicyPulseImageVarietyHotfix = {
+    loaded: false,
+    cardCount: 0,
+    uniqueImageCount: 0,
+    refreshedAt: new Date().toISOString(),
+  };
+
   const imageUrl = (id) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1200&q=82`;
   const TOPIC_IMAGES = {
     policy: [
@@ -37,7 +44,7 @@
       imageUrl("photo-1544620347-c4fd4a3d5957"),
       imageUrl("photo-1494515843206-f3117d3f51b7"),
       imageUrl("photo-1519003722824-194d4455a60c"),
-      imageUrl("photo-1449824913935-59a10b8d2000c"),
+      imageUrl("photo-1449965408869-eaa3f722e40d"),
       imageUrl("photo-1474487548417-781cb71495f3"),
       imageUrl("photo-1502877338535-766e1452684a"),
       imageUrl("photo-1532105956626-9569c03602f6"),
@@ -64,13 +71,20 @@
     return String(value || "").split("").reduce((hash, char) => ((hash * 31) + char.charCodeAt(0)) >>> 0, 0);
   }
 
+  const TOPIC_KEYWORDS = {
+    transport: ["\u4ea4\u901a", "\u9053\u8def", "\u516c\u8eca", "\u9435\u8def", "\u6377\u904b", "\u901a\u52e4", "\u904b\u8f38"],
+    education: ["\u6559\u80b2", "\u6821\u5712", "\u5b78\u6821", "\u63a1\u8cfc", "\u6559\u59d4"],
+    energy: ["\u80fd\u6e90", "\u96fb\u50f9", "\u4f9b\u96fb", "\u96fb\u7db2", "\u5149\u96fb", "\u98a8\u529b", "\u5132\u80fd"],
+    housing: ["\u5c45\u4f4f", "\u4f4f\u5b85", "\u79df\u5c4b", "\u623f\u5c4b", "\u793e\u5b85"],
+    labor: ["\u52de\u5de5", "\u52de\u52d5", "\u85aa\u8cc7", "\u5c31\u696d", "\u5de5\u8cc7"],
+    budget: ["\u8ca1\u7d93", "\u9810\u7b97", "\u88dc\u52a9", "\u7a05", "\u8ca1\u653f", "\u7522\u696d"],
+  };
+
   function inferTopic(text) {
-    if (/交通|道路|公車|捷運|鐵路|通勤|運輸|車流|路線|班次|停車/.test(text)) return "transport";
-    if (/教育|校園|學費|學校|學生|採購|課程/.test(text)) return "education";
-    if (/能源|電價|供電|電網|再生|風力|太陽能|發電/.test(text)) return "energy";
-    if (/居住|住宅|房價|房租|租屋|社宅|都更/.test(text)) return "housing";
-    if (/勞工|薪資|就業|職安|加班|工資/.test(text)) return "labor";
-    if (/預算|財經|財政|補助|稅|產業|投資|物價|經費|財源/.test(text)) return "budget";
+    const value = String(text || "");
+    for (const [topic, words] of Object.entries(TOPIC_KEYWORDS)) {
+      if (words.some((word) => value.includes(word))) return topic;
+    }
     return "policy";
   }
 
@@ -87,9 +101,13 @@
     return pool[start] || TOPIC_IMAGES.policy[0];
   }
 
-  function setImage(img, src) {
+  function setImage(img, src, fallbackSrc) {
     if (!img || !src) return;
     if (img.getAttribute("src") !== src) img.setAttribute("src", src);
+    img.onerror = () => {
+      img.onerror = null;
+      if (fallbackSrc && img.getAttribute("src") !== fallbackSrc) img.setAttribute("src", fallbackSrc);
+    };
     img.setAttribute("referrerpolicy", "no-referrer");
   }
 
@@ -103,7 +121,7 @@
       const title = card.querySelector("h3")?.textContent || text;
       const topic = inferTopic(text);
       const src = chooseImage(topic, `${topic}|${title}|${index}`, usedImages);
-      setImage(card.querySelector("img.thumb, img"), src);
+      setImage(card.querySelector("img.thumb, img"), src, TOPIC_IMAGES.policy[index % TOPIC_IMAGES.policy.length]);
     });
 
     const featured = document.querySelector("#featuredStory");
@@ -111,7 +129,7 @@
     if (featuredImg) {
       const text = featured.textContent || "";
       const topic = inferTopic(text);
-      setImage(featuredImg, chooseImage(topic, `${topic}|featured|${text}`, new Set(usedImages)));
+      setImage(featuredImg, chooseImage(topic, `${topic}|featured|${text}`, new Set(usedImages)), TOPIC_IMAGES.policy[0]);
     }
 
     window.PolicyPulseImageVarietyHotfix = {
