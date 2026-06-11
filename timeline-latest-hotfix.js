@@ -35,7 +35,7 @@
 
   if (!document.querySelector('script[src*="home-fresh-hotfix.js"]')) {
     const script = document.createElement("script");
-    script.src = "home-fresh-hotfix.js?v=20260611-1";
+    script.src = "home-fresh-hotfix.js?v=20260611-2";
     script.async = false;
     const current = document.currentScript;
     if (current?.parentNode) {
