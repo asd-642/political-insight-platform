@@ -124,22 +124,32 @@
   }
 
   function splitSourceTrailText(value) {
-    const text = String(value || "").replace(/\s+/g, " ").trim();
+    const text = String(value || "")
+      .replace(/\s+/g, " ")
+      .replace(/[；;。]\s*(?:新聞摘要|公開來源|本文會|文章會|這些資料|系統會|後續仍要).+$/g, "")
+      .trim();
     if (!text) return [];
 
     const numbered = [];
     const pattern = /(?:^|[；;]\s*)\d+[.．、]\s*(.*?)(?=(?:[；;]\s*\d+[.．、])|$)/g;
     let match = pattern.exec(text);
     while (match) {
-      numbered.push(match[1].trim());
+      numbered.push(cleanTrailItem(match[1]));
       match = pattern.exec(text);
     }
     if (numbered.length) return numbered.filter(Boolean);
 
     return text
       .split(/[；;]\s*/)
-      .map((item) => item.trim())
+      .map(cleanTrailItem)
       .filter((item) => item.length > 5);
+  }
+
+  function cleanTrailItem(value) {
+    return String(value || "")
+      .replace(/[；;。]\s*(?:新聞摘要|公開來源|本文會|文章會|這些資料|系統會|後續仍要).+$/g, "")
+      .replace(/[；;]\s*$/g, "")
+      .trim();
   }
 
   function parseSourceTrail(item) {
