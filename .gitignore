@@ -4,4 +4,24 @@
 *.log
 .DS_Store
 Thumbs.db
+
+# Private keys and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*service-account*.json
+firebase-service-account*.json
+credentials*.json
+secrets*.json
+
+# Local databases and exports
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+*.dump
+*.csv
+*.xlsx
+
 .codex-preview/
