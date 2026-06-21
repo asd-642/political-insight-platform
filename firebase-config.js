@@ -1,6 +1,6 @@
 window.PolicyPulseFirebaseConfig = {
   enabled: true,
-  adminEmails: ["lutinghui941025@gmail.com"],
+  adminEmails: [],
   firebase: {
     apiKey: "AIzaSyA6ZmZnNMylKj2Uy9tS_d933fYHHFWkmS8",
     authDomain: "policy-pulse-tw.firebaseapp.com",
