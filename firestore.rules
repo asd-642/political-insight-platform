@@ -8,17 +8,12 @@ service cloud.firestore {
 
     function isAdmin() {
       return signedIn()
-        && (
-          exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-          || (
-            request.auth.token.email_verified == true
-            && request.auth.token.email == 'lutinghui941025@gmail.com'
-          )
-        );
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
     function validEvent() {
-      return request.resource.data.keys().hasOnly([
+      return signedIn()
+        && request.resource.data.keys().hasOnly([
           'type',
           'payload',
           'path',
@@ -27,11 +22,28 @@ service cloud.firestore {
           'at',
           'createdAt'
         ])
+        && request.resource.data.keys().hasAll([
+          'type',
+          'payload',
+          'path',
+          'uid',
+          'at',
+          'createdAt'
+        ])
         && request.resource.data.type is string
         && request.resource.data.type.size() <= 60
         && request.resource.data.path is string
         && request.resource.data.path.size() <= 120
-        && request.resource.data.payload is map;
+        && request.resource.data.uid == request.auth.uid
+        && (
+          request.resource.data.email == null
+          || request.resource.data.email == request.auth.token.email
+        )
+        && request.resource.data.at is string
+        && request.resource.data.at.size() <= 40
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.payload is map
+        && request.resource.data.payload.keys().size() <= 30;
     }
 
     function ownsComment() {
