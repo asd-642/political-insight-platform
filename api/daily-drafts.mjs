@@ -1,8 +1,7 @@
 import { getDocument, listDocuments, setDocument } from "./_lib/firestore-rest.mjs";
 import { runDailyDrafts } from "./_lib/policy-drafts.mjs";
 
-const firebaseWebApiKey = process.env.FIREBASE_WEB_API_KEY || "AIzaSyA6ZmZnNMylKj2Uy9tS_d933fYHHFWkmS8";
-const defaultAdminEmails = ["lutinghui941025@gmail.com"];
+const firebaseWebApiKey = process.env.FIREBASE_WEB_API_KEY || "";
 
 function sendJson(response, status, payload) {
   response.statusCode = status;
@@ -15,7 +14,7 @@ function sendJson(response, status, payload) {
 }
 
 function adminEmails() {
-  return (process.env.ADMIN_EMAILS || defaultAdminEmails.join(","))
+  return (process.env.ADMIN_EMAILS || "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
@@ -28,6 +27,7 @@ function bearerToken(request) {
 
 async function lookupFirebaseUser(idToken) {
   if (!idToken) return null;
+  if (!firebaseWebApiKey) throw new Error("Missing FIREBASE_WEB_API_KEY.");
   const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseWebApiKey}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
