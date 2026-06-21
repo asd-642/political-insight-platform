@@ -46,6 +46,14 @@
     ].includes(error?.code);
   }
 
+  function allowLocalAuthFallback() {
+    return ["localhost", "127.0.0.1", ""].includes(location.hostname);
+  }
+
+  function localAuthDisabledError() {
+    return new Error("正式站不啟用本機帳號備援，請使用 Firebase 登入或稍後再試。");
+  }
+
   async function createLocalUser({ email, password, displayName }) {
     const api = auth();
     const users = api.readUsers();
@@ -119,12 +127,14 @@
           setStatus("帳號已建立，已寄出信箱驗證信。你可以回首頁開始使用。", "success");
         } catch (firebaseError) {
           if (!firebaseEmailUnavailable(firebaseError)) throw firebaseError;
+          if (!allowLocalAuthFallback()) throw localAuthDisabledError();
           await createLocalUser({ email, password, displayName });
           stats()?.record("signup", { method: "local_email_fallback", email, reason: firebaseError.code });
           setStatus("會員資料已建立，正在回首頁。", "success");
           setTimeout(() => location.assign("index.html"), 900);
         }
       } else {
+        if (!allowLocalAuthFallback()) throw localAuthDisabledError();
         await createLocalUser({ email, password, displayName });
         stats()?.record("signup", { method: "local_email", email });
         setStatus("會員資料已建立，正在回首頁。", "success");
@@ -154,11 +164,13 @@
           setStatus("密碼重設信已寄出。請到信箱點連結設定新密碼。", "success");
         } catch (firebaseError) {
           if (!firebaseEmailUnavailable(firebaseError)) throw firebaseError;
+          if (!allowLocalAuthFallback()) throw localAuthDisabledError();
           const password = await resetLocalPassword(email);
           stats()?.record("password_reset_request", { method: "local_email_fallback", email, reason: firebaseError.code });
           setStatus(`已建立新的臨時密碼：${password}。`, "success");
         }
       } else {
+        if (!allowLocalAuthFallback()) throw localAuthDisabledError();
         const password = await resetLocalPassword(email);
         stats()?.record("password_reset_request", { method: "local_email", email });
         setStatus(`新的臨時密碼是：${password}。登入後請到帳號設定改成自己的密碼。`, "success");
